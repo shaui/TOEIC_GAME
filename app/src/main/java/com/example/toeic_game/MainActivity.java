@@ -8,6 +8,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tabLayout.setupWithViewPager(viewPager);
 
         //nav_btn
+
         btn_nav = findViewById(R.id.btn_nav);
         setBackground(btn_nav, R.drawable.icon_navigation_bar);
         btn_nav.setOnClickListener(new View.OnClickListener() {
@@ -72,8 +74,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        //drawLayout
+        //DrawerLayout,useing in open and close drawer
         drawerLayout = findViewById(R.id.layout_dl);
+
+        //NavigationView
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
 
     }
 
@@ -95,10 +102,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        return false;
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+        switch (menuItem.getItemId()){
+            case R.id.nav_login:
+                //
+                break;
+            case R.id.nav_logout:
+                //
+                break;
+            case R.id.nav_character:
+                //
+                break;
+            case R.id.nav_log:
+                //
+                break;
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+
+        return true;
+    }
 
     class TabFragmentAdapter extends FragmentPagerAdapter {
 
