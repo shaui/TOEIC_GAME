@@ -1,19 +1,19 @@
 package com.example.toeic_game.fragment;
 
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.toeic_game.R;
-import com.example.toeic_game.util.AutoAdaptImage;
+
 import com.example.toeic_game.widget.StartDialog;
 import com.makeramen.roundedimageview.RoundedImageView;
 
@@ -23,6 +23,7 @@ public class MainTabFragment extends Fragment {
     private RoundedImageView riv_game_1, riv_game_2, riv_game_3,
             riv_game_4, riv_game_5;
     private int reqWidth, reqHeight;
+
 
     private Context context;
 
@@ -36,33 +37,22 @@ public class MainTabFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         tab_view = inflater.inflate(R.layout.layout_tab_item, container, false);
+        Log.d("Fragment","---onCreateView---");
         return tab_view;
     }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.d("Fragment","---onActivityCreated---");
+        setTabContent();
+    }
 
-        riv_game_1 = tab_view.findViewById(R.id.riv_gmae_1);
-        riv_game_2 = tab_view.findViewById(R.id.riv_gmae_2);
-        riv_game_3 = tab_view.findViewById(R.id.riv_gmae_3);
-        riv_game_4 = tab_view.findViewById(R.id.riv_gmae_4);
-        riv_game_5 = tab_view.findViewById(R.id.riv_gmae_5);
-        //setImages
-        setImage(riv_game_1, R.drawable.bg_game_1);
-        setImage(riv_game_2, R.drawable.bg_game_2);
-        setImage(riv_game_3, R.drawable.bg_game_3);
-        setImage(riv_game_4, R.drawable.bg_game_4);
-        setImage(riv_game_5, R.drawable.bg_game_5);
-
-        //setListener
-        StartOnclick startOnclick = new StartOnclick();
-        riv_game_1.setOnClickListener(startOnclick);
-        riv_game_2.setOnClickListener(startOnclick);
-        riv_game_3.setOnClickListener(startOnclick);
-        riv_game_4.setOnClickListener(startOnclick);
-        riv_game_5.setOnClickListener(startOnclick);
-
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d("Fragment","---onDestroyView---");
     }
 
     class StartOnclick implements View.OnClickListener{
@@ -95,20 +85,29 @@ public class MainTabFragment extends Fragment {
         }
     }
 
+    private void setTabContent(){
+        riv_game_1 = tab_view.findViewById(R.id.riv_gmae_1);
+        riv_game_2 = tab_view.findViewById(R.id.riv_gmae_2);
+        riv_game_3 = tab_view.findViewById(R.id.riv_gmae_3);
+        riv_game_4 = tab_view.findViewById(R.id.riv_gmae_4);
+        riv_game_5 = tab_view.findViewById(R.id.riv_gmae_5);
 
-    /***************** method 1 *****************/
-    /*but use the final, so the view cannot change*/
-    public void setImage(final View view, final int drawable){
-        //post是為了在繪製前取得width, height
-        view.post(new Runnable() {
-            @Override
-            public void run() {
-                reqWidth = view.getWidth();
-                reqHeight = view.getHeight();
-                ((ImageView) view).setImageBitmap(AutoAdaptImage.decodeSampledBitmapFromResource(getResources(), drawable,
-                        reqWidth, reqHeight));
-                ((ImageView) view).setScaleType(ImageView.ScaleType.CENTER_CROP);
-            }
-        });
+        //setImages
+        Glide.with(context).load(R.drawable.bg_game_1).into(riv_game_1);
+        Glide.with(context).load(R.drawable.bg_game_2).into(riv_game_2);
+        Glide.with(context).load(R.drawable.bg_game_3).into(riv_game_3);
+        Glide.with(context).load(R.drawable.bg_game_4).into(riv_game_4);
+        Glide.with(context).load(R.drawable.bg_game_5).into(riv_game_5);
+
+        //setListener
+        StartOnclick startOnclick = new StartOnclick();
+        riv_game_1.setOnClickListener(startOnclick);
+        riv_game_2.setOnClickListener(startOnclick);
+        riv_game_3.setOnClickListener(startOnclick);
+        riv_game_4.setOnClickListener(startOnclick);
+        riv_game_5.setOnClickListener(startOnclick);
     }
+
+
+
 }

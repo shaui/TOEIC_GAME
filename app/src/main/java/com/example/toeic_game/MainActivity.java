@@ -15,12 +15,11 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-
 
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
+
 
 
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-//    private RoundedImageView riv_game_1, riv_game_2, riv_game_3,
-//                            riv_game_4, riv_game_5;
     private Button btn_nav;
     private DrawerLayout drawerLayout;
 
@@ -40,11 +37,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        riv_game_1 = findViewById(R.id.riv_gmae_1);
-//        riv_game_2 = findViewById(R.id.riv_gmae_2);
-//        riv_game_3 = findViewById(R.id.riv_gmae_3);
-//        riv_game_4 = findViewById(R.id.riv_gmae_4);
-//        riv_game_5 = findViewById(R.id.riv_gmae_5);
 
         //TabLayout
         TabLayout tabLayout = findViewById(R.id.layout_tab);
@@ -65,11 +57,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         TabFragmentAdapter tabFragmentAdapter = new TabFragmentAdapter(getSupportFragmentManager(),
                 tabFragment, tabNameList);
         ViewPager viewPager = findViewById(R.id.vp_content);
-        viewPager.setOffscreenPageLimit(1);
         //把viewPager和tablayout關連起來
+        viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(tabFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-
 
         //nav_btn
         btn_nav = findViewById(R.id.btn_nav);
@@ -84,28 +75,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //drawLayout
         drawerLayout = findViewById(R.id.layout_dl);
 
-
-
-//        //setImages
-//        setImage(riv_game_1, R.drawable.bg_game_1);
-//        setImage(riv_game_2, R.drawable.bg_game_2);
-//        setImage(riv_game_3, R.drawable.bg_game_3);
-//        setImage(riv_game_4, R.drawable.bg_game_4);
-//        setImage(riv_game_5, R.drawable.bg_game_5);
-//
-//        //setListener
-//        StartOnclick startOnclick = new StartOnclick();
-//        riv_game_1.setOnClickListener(startOnclick);
-//        riv_game_2.setOnClickListener(startOnclick);
-//        riv_game_3.setOnClickListener(startOnclick);
-//        riv_game_4.setOnClickListener(startOnclick);
-//        riv_game_5.setOnClickListener(startOnclick);
-
-
-
     }
 
-    public void setBackground(final View view, final int drawable){
+    private void setBackground(final View view, final int drawable){
         view.post(new Runnable() {
             @Override
             public void run() {
@@ -126,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         return false;
     }
+
 
     class TabFragmentAdapter extends FragmentPagerAdapter {
 
