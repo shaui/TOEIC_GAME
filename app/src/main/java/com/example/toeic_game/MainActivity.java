@@ -17,7 +17,10 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
 
@@ -64,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tabLayout.setupWithViewPager(viewPager);
 
         //nav_btn
-
         btn_nav = findViewById(R.id.btn_nav);
         setBackground(btn_nav, R.drawable.icon_navigation_bar);
         btn_nav.setOnClickListener(new View.OnClickListener() {
