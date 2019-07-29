@@ -1,14 +1,11 @@
 package com.example.toeic_game;
 
-import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -52,10 +49,13 @@ public class GameActivity extends AppCompatActivity {
         animation.setTarget(text);
         if(clock != null)
             clock.cancel();
-        clock = new CountDownTimer(3010,1000) {
+        clock = new CountDownTimer(3100,1000) {
             @Override
             public void onFinish() {
+                text.setScaleX(1.0f);
+                text.setScaleY(1.0f);
                 text.setText("Start!!");
+                clock.cancel();
             }
 
             @Override
