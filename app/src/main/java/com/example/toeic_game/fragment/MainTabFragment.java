@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +24,8 @@ public class MainTabFragment extends Fragment {
     private View tab_view;
     private RoundedImageView riv_game_1, riv_game_2, riv_game_3,
             riv_game_4, riv_game_5;
-    private int reqWidth, reqHeight;
-
+    private NestedScrollView nestedScrollView;
+    private int color;
 
     private Context context;
 
@@ -31,6 +33,8 @@ public class MainTabFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
+        Bundle bundle = getArguments();
+        this.color = bundle.getInt("color");
     }
 
     @Nullable
@@ -41,7 +45,6 @@ public class MainTabFragment extends Fragment {
         return tab_view;
     }
 
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -49,11 +52,6 @@ public class MainTabFragment extends Fragment {
         setTabContent();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.d("Fragment","---onDestroyView---");
-    }
 
     class StartOnclick implements View.OnClickListener{
 
@@ -91,6 +89,9 @@ public class MainTabFragment extends Fragment {
         riv_game_3 = tab_view.findViewById(R.id.riv_gmae_3);
         riv_game_4 = tab_view.findViewById(R.id.riv_gmae_4);
         riv_game_5 = tab_view.findViewById(R.id.riv_gmae_5);
+        nestedScrollView = tab_view.findViewById(R.id.sv_layout_content);
+
+        nestedScrollView.setBackgroundColor(ContextCompat.getColor(context, color));
 
         //setImages
         Glide.with(context).load(R.drawable.bg_game_1).into(riv_game_1);
@@ -107,7 +108,5 @@ public class MainTabFragment extends Fragment {
         riv_game_4.setOnClickListener(startOnclick);
         riv_game_5.setOnClickListener(startOnclick);
     }
-
-
 
 }
