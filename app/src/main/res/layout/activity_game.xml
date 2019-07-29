@@ -229,7 +229,6 @@
         android:id="@+id/score_bar"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/text_top"
@@ -245,10 +244,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="TextView"
+        android:textSize="60sp"
         app:layout_constraintBottom_toTopOf="@id/head_bottom"
         app:layout_constraintEnd_toStartOf="@+id/p2_left"
-        app:layout_constraintStart_toEndOf="@+id/p1_head"
+        app:layout_constraintStart_toEndOf="@+id/p1_right"
         app:layout_constraintTop_toTopOf="parent" />
 
 
