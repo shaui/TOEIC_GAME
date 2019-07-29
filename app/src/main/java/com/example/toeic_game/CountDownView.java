@@ -17,10 +17,13 @@ public class CountDownView extends View {
     private long time = 5000, passTime = 0;
     private Paint p;
     private CountDownTimer clock;
+    private RectF oval;
 
     public CountDownView(Context context, AttributeSet attrs) {
         super(context, attrs);
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setStyle(Paint.Style.STROKE); //空心
+        p.setStrokeWidth(15);
     }
 
     @Override
@@ -38,15 +41,13 @@ public class CountDownView extends View {
             iy = cy - r;
             fx = cx + r;
             fy = cy + r;
+            oval = new RectF(ix, iy, fx, fy);
         }
-        p.setStyle(Paint.Style.STROKE); //空心
-        p.setStrokeWidth(15);
-        RectF oval1= new RectF(ix, iy, fx, fy);
         p.setColor(Color.GRAY);
-        canvas.drawArc(oval1, 0, 360, false, p);
+        canvas.drawArc(oval, 0, 360, false, p);
         p.setColor(color);
         float a = 270 + passTime / (float) (time) * 360, b = 360 - passTime / (float) time * 360;
-        canvas.drawArc(oval1, a, b, false, p);
+        canvas.drawArc(oval, a, b, false, p);
     }
 
     public void setColor(int color) {
@@ -63,7 +64,7 @@ public class CountDownView extends View {
         }
         if(!isContinue)
             passTime = 0;
-        clock = new CountDownTimer(time - passTime,40){
+        clock = new CountDownTimer(time - passTime,40) {
 
             @Override
             public void onFinish() {
