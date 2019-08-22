@@ -13,12 +13,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.toeic_game.R;
 import com.example.toeic_game.util.AutoAdaptImage;
-import com.example.toeic_game.util.ToastUtil;
 
 public class StartDialog extends Dialog {
 
@@ -27,6 +25,8 @@ public class StartDialog extends Dialog {
     private int reqWidth, reqHeight;
     private Context context;
     private int drawable;
+
+
 
     public StartDialog(@NonNull Context context, int drawable) {
         super(context);
@@ -51,7 +51,8 @@ public class StartDialog extends Dialog {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToastUtil.showMsg(context, "Game Start");
+                MatchDialog matchDialog = new MatchDialog(context);
+                matchDialog.show();
             }
         });
 
@@ -91,4 +92,7 @@ public class StartDialog extends Dialog {
             }
         });
     }
+
+
+
 }

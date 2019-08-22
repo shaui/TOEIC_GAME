@@ -2,18 +2,17 @@ package com.example.toeic_game;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,11 +23,8 @@ import android.widget.TextView;
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -45,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
 
     private int reqWidth, reqHeight;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -236,8 +231,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public String getPageTitle(int i) {
             return title.get(i);
         }
-
-
-
     }
 }
