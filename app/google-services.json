@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "693772837331",
+    "firebase_url": "https://firetest-9cadb.firebaseio.com",
+    "project_id": "firetest-9cadb",
+    "storage_bucket": "firetest-9cadb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693772837331:android:61f9282c8e210614",
+        "android_client_info": {
+          "package_name": "com.example.firetest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "693772837331-g9v391er4lpqccc8g8la9m90fogtdoec.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.firetest",
+            "certificate_hash": "dd085e7647d2836d4c1c5216c5a45ab96db12124"
+          }
+        },
+        {
+          "client_id": "693772837331-1oe2oen5fa530fq740v7c0msehe41aaa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.firetest",
+            "certificate_hash": "22ca3aac2bd0e275516719dfe9f9e36ebed93bb5"
+          }
+        },
+        {
+          "client_id": "693772837331-reeeuo6071v3ajgofafm5mkue82m15a1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfaD2tXkfhKrGh241XWTCrnK-L_v9vx5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693772837331-reeeuo6071v3ajgofafm5mkue82m15a1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693772837331:android:6a91721d8feaf692",
+        "android_client_info": {
+          "package_name": "com.example.toeic_game"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "693772837331-k8452ehabngdghgmt0o1p7kuer542ots.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.toeic_game",
+            "certificate_hash": "dd085e7647d2836d4c1c5216c5a45ab96db12124"
+          }
+        },
+        {
+          "client_id": "693772837331-reeeuo6071v3ajgofafm5mkue82m15a1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfaD2tXkfhKrGh241XWTCrnK-L_v9vx5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693772837331-reeeuo6071v3ajgofafm5mkue82m15a1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
