@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -136,10 +137,21 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {};
         });
+        Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP1);
+        Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP2);
     }
 
     //回合開始 先抓完題目才準備開始
     private void getQuest() {
+        if(questNum > 4) {
+            int[] tempScore = scoreBar.getScore();
+            if(tempScore[0] > tempScore[1])
+                ending(true);
+            else
+                ending(false);
+            roomRef.removeValue();
+            return;
+        }
         roomRef.child("/quest/" + questNum++).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -190,7 +202,7 @@ public class GameActivity extends AppCompatActivity {
     //正式開始
     private void displayQuest() {
         StringBuilder builder = new StringBuilder();
-        builder.append(quest);
+        builder.append(quest + "\n");
         questTextView.setText(builder);
         for(int i = 0; i < 4; i++) {
             optionList[i] = randomOptions.pollFirstEntry();
@@ -222,6 +234,9 @@ public class GameActivity extends AppCompatActivity {
                 getQuest();
             }
         }).start();
+    }
+
+    private void ending(boolean p1Win) {
     }
 
 }

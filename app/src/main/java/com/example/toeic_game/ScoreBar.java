@@ -50,6 +50,10 @@ public class ScoreBar extends View {
         invalidate();
     }
 
+    public int[] getScore() {
+        return new int[] {p1_score, p2_score};
+    }
+
     public void setColorA(int color) {
         colorA = color;
     }

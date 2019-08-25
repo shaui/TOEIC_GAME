@@ -7,9 +7,8 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
-import android.view.View;
 
-public class CountDownView extends View {
+public class CountDownView extends android.support.v7.widget.AppCompatImageView {
 
     private boolean ini = false;
     private int color = Color.GREEN;
@@ -28,6 +27,7 @@ public class CountDownView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+//        super.onDraw(canvas);
         if(!ini) {
             ini = true;
             float cx, cy, r;
