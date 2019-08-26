@@ -232,4 +232,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return title.get(i);
         }
     }
+
 }

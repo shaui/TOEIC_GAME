@@ -51,11 +51,10 @@ public class StartDialog extends Dialog {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MatchDialog matchDialog = new MatchDialog(context);
+                MatchDialog matchDialog = new MatchDialog(context, StartDialog.this);
                 matchDialog.show();
             }
         });
-
     }
 
     private void setDialogDimension(){
@@ -92,7 +91,6 @@ public class StartDialog extends Dialog {
             }
         });
     }
-
 
 
 }

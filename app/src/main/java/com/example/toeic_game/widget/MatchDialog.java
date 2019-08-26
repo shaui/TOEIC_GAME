@@ -2,6 +2,7 @@ package com.example.toeic_game.widget;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
@@ -13,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.toeic_game.GameActivity;
 import com.example.toeic_game.Player;
 import com.example.toeic_game.R;
 import com.google.firebase.database.DataSnapshot;
@@ -26,6 +28,7 @@ public class MatchDialog extends Dialog {
     private Button btn_cancel;
     private TextView tv_match_player;
     private Context context;
+    private StartDialog startDialog;
 
     //firebase usage parameter
     private FirebaseDatabase database;
@@ -37,9 +40,10 @@ public class MatchDialog extends Dialog {
     private String roomID;
     private boolean isCancel = false;
 
-    public MatchDialog(@NonNull Context context) {
+    public MatchDialog(@NonNull Context context, StartDialog startDialog) {
         super(context);
         this.context = context;
+        this.startDialog = startDialog;
     }
 
     @Override
@@ -122,31 +126,27 @@ public class MatchDialog extends Dialog {
                 roomID = tempRoomRef.getKey();
 
                 //搜尋玩家
-                tempRoomRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                tempRoomRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
                         //當player2不存在
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                !dataSnapshot.child("player2").exists() || !dataSnapshot.child("option").exists()
-                                while(!dataSnapshot.child("player2").exists()){
-                                    //顯示找尋對手中的框框
-                                    Log.i("---search---", "search player2");
-                                    if(isCancel){
-                                        break;
-                                    }
-                                }
-                                if(dataSnapshot.child("player2").exists()){
-//                                Intent intent = new Intent();
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("roomID", roomID);
-//                                bundle.putBoolean("isPlayer1", isPlayer1);
-//                                intent.putExtras(bundle);
-//                                context.startActivity(intent);
-                                }
+                        if (!dataSnapshot.child("quest").exists()){
+                            Log.i("---search---", "search player2");
+                        }
+                        else {
+                            //先關閉之前開的startDialog
+                            if(startDialog.isShowing()){
+                                startDialog.dismiss();
                             }
-                        }).start();
+                            //先刪除Listener,再跳轉
+                            tempRoomRef.removeEventListener(this);
+                            Intent intent = new Intent(context, GameActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("roomID", roomID);
+                            bundle.putBoolean("isPlayer1", isPlayer1);
+                            intent.putExtras(bundle);
+                            context.startActivity(intent);
+                        }
                         if(dataSnapshot.child("player2").exists()){
                             Log.i("---player1---", dataSnapshot.child("player1").getValue(Player.class).getName());
                             Log.i("---player2---", dataSnapshot.child("player2").getValue(Player.class).getName());
