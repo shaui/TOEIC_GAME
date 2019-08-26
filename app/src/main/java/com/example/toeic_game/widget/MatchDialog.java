@@ -59,6 +59,7 @@ public class MatchDialog extends Dialog {
             @Override
             public void onClick(View v) {
                 isCancel = true;
+                tempRoomRef.removeValue();
                 dismiss();
             }
         });
@@ -139,25 +140,17 @@ public class MatchDialog extends Dialog {
                                 if(dataSnapshot.child("player2").exists()){
 //                                Intent intent = new Intent();
 //                                Bundle bundle = new Bundle();
+//                                bundle.putString("roomID", roomID);
 //                                bundle.putBoolean("isPlayer1", isPlayer1);
 //                                intent.putExtras(bundle);
 //                                context.startActivity(intent);
                                 }
-
-
                             }
                         }).start();
                         if(dataSnapshot.child("player2").exists()){
                             Log.i("---player1---", dataSnapshot.child("player1").getValue(Player.class).getName());
                             Log.i("---player2---", dataSnapshot.child("player2").getValue(Player.class).getName());
                         }
-
-//                        Intent intent = new Intent();
-//                        Bundle bundle = new Bundle();
-//                        bundle.putBoolean("isPlayer1", isPlayer1);
-//                        bundle.putString("roomID", roomID);
-//                        intent.putExtras(bundle);
-//                        startActivity(intent);
                     }
 
                     @Override
