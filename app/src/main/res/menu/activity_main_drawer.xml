@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_login"
+            android:title="Login"/>
+        <item
+            android:id="@+id/nav_logout"
+            android:title="Logout"/>
+    </group>
+
+    <item android:title="other">
+        <menu>
+            <item
+                android:id="@+id/nav_character"
+                android:title="角色資訊"/>
+            <item
+                android:id="@+id/nav_log"
+                android:title="對戰紀錄"/>
+        </menu>
+    </item>
+</menu>

@@ -12,17 +12,21 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.example.toeic_game.R;
 import com.example.toeic_game.util.AutoAdaptImage;
-import com.example.toeic_game.util.ToastUtil;
 
 public class StartDialog extends Dialog {
 
     private Button btn_start;
+    private ImageView iv_start;
     private int reqWidth, reqHeight;
     private Context context;
     private int drawable;
+
+
 
     public StartDialog(@NonNull Context context, int drawable) {
         super(context);
@@ -36,7 +40,9 @@ public class StartDialog extends Dialog {
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
-        setBackground(view, drawable);
+        iv_start = view.findViewById(R.id.iv_start);
+        iv_start.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        Glide.with(context).load(drawable).into(iv_start);
         setContentView(view);
 
         setDialogDimension();
@@ -45,7 +51,8 @@ public class StartDialog extends Dialog {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToastUtil.showMsg(context, "Game Start");
+                MatchDialog matchDialog = new MatchDialog(context);
+                matchDialog.show();
             }
         });
 
@@ -85,4 +92,7 @@ public class StartDialog extends Dialog {
             }
         });
     }
+
+
+
 }
