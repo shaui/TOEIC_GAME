@@ -27,7 +27,7 @@ public class CountDownView extends android.support.v7.widget.AppCompatImageView 
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
+        super.onDraw(canvas);
         if(!ini) {
             ini = true;
             float cx, cy, r;

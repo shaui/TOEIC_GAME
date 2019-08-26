@@ -2,10 +2,12 @@ package com.example.toeic_game;
 
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
+import android.content.Intent;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,8 +27,27 @@ import java.util.TreeMap;
 public class GameActivity extends AppCompatActivity {
 
     private int time, questNum = 0, ansAt = 0, score = 0;
-    private boolean isPlayer1, oppoIsReady = false;
+    private boolean isPlayer1, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
     private String[] quest;
+
+    private Thread gameThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while(!endGame) {
+                getQuest();
+                while(!oppoIsReady || !selfIsReady) {
+                    try {
+                        Thread.sleep(100);
+                        Log.i("GameThread", "wait");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                selfIsReady = false;
+                oppoIsReady = false;
+            }
+        }
+    });
 
     private CountDownView headP1, headP2;
     private ScoreBar scoreBar;
@@ -38,8 +59,17 @@ public class GameActivity extends AppCompatActivity {
     private ValueEventListener oppoScoreListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            scoreBar.setScore(false, dataSnapshot.getValue(Integer.class) );
-            oppoIsReady = true;
+            if(initialed && dataSnapshot.getValue(Integer.class) != null) {
+                if(isPlayer1) {
+                    headP2.pause();
+                }
+                else {
+                    headP1.pause();
+                }
+                scoreBar.setScore(!isPlayer1, dataSnapshot.getValue(Integer.class) );
+                oppoIsReady = true;
+            }
+            initialed = true;
         }
 
         @Override
@@ -84,23 +114,22 @@ public class GameActivity extends AppCompatActivity {
         ans[3] = findViewById(R.id.ans4);
         timeTextView = findViewById(R.id.time);
         questTextView = findViewById(R.id.quest);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
         setPlayerData();
         for(int i = 0; i < 4; i++) {
             setAnsButtonEvent(i);
         }
         oppoRef.child("score").addValueEventListener(oppoScoreListener);
+        gameThread.start();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        selfRef.removeValue();
+        endGame = true;
+        selfIsReady = true;
         oppoIsReady = true;
         oppoRef.child("score").removeEventListener(oppoScoreListener);
+        super.onDestroy();
     }
 
     private void setAnsButtonEvent(final int num) {
@@ -145,11 +174,15 @@ public class GameActivity extends AppCompatActivity {
     private void getQuest() {
         if(questNum > 4) {
             int[] tempScore = scoreBar.getScore();
-            if(tempScore[0] > tempScore[1])
+            if(tempScore[0] > tempScore[1]) {
                 ending(true);
+            }
             else
                 ending(false);
             roomRef.removeValue();
+            Intent intent = new Intent(GameActivity.this, MainActivity.class);
+            this.startActivity(intent);
+            this.finish();
             return;
         }
         roomRef.child("/quest/" + questNum++).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -202,41 +235,38 @@ public class GameActivity extends AppCompatActivity {
     //正式開始
     private void displayQuest() {
         StringBuilder builder = new StringBuilder();
-        builder.append(quest + "\n");
-        questTextView.setText(builder);
         for(int i = 0; i < 4; i++) {
+            builder.append(quest[i]);
+            if(i != 3) {
+                builder.append("\n");
+            }
             optionList[i] = randomOptions.pollFirstEntry();
             ans[i].setText(optionList[i].getKey());
             ans[i].setEnabled(true);
         }
+        questTextView.setText(builder.toString());
     }
 
     //分數處理也在這裡
     private void nextRoundCheck() {
         if(ansAt == 4) {
+            ansAt = 0;
             if(isPlayer1)
                 headP1.pause();
             else
                 headP2.pause();
-            scoreBar.setScore(true, score);
+            score += 10; // 暫時有的分數
+            scoreBar.setScore(isPlayer1, score);
             selfRef.child("score").setValue(score);
-            waitToNextRound();
+            selfIsReady = true;
         }
     }
 
-    //等待對手上傳分數 再開始下回合
-    private void waitToNextRound() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(!oppoIsReady);
-                oppoIsReady = false;
-                getQuest();
-            }
-        }).start();
-    }
-
     private void ending(boolean p1Win) {
+        oppoRef.child("score").removeEventListener(oppoScoreListener);
+        endGame = true;
+        selfIsReady = true;
+        oppoIsReady = true;
     }
 
 }

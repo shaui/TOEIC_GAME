@@ -138,6 +138,8 @@ public class MatchDialog extends Dialog {
                             if(startDialog.isShowing()){
                                 startDialog.dismiss();
                             }
+                            //關閉matchingDialog
+                            dismiss();
                             //先刪除Listener,再跳轉
                             tempRoomRef.removeEventListener(this);
                             Intent intent = new Intent(context, GameActivity.class);
