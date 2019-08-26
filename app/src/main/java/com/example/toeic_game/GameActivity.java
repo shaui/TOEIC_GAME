@@ -75,6 +75,17 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) { }
     };
+    private ValueEventListener detectOppoLeavedListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if(!dataSnapshot.child("player1").exists() || !dataSnapshot.child("player2").exists()) {
+                ending(isPlayer1);
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {}
+    };
     private Player self, oppo;
 
     private TreeMap<String, Integer> randomOptions = new TreeMap<>(new Comparator<String>() {
@@ -118,6 +129,7 @@ public class GameActivity extends AppCompatActivity {
         for(int i = 0; i < 4; i++) {
             setAnsButtonEvent(i);
         }
+        roomRef.addValueEventListener(detectOppoLeavedListener);
         oppoRef.child("score").addValueEventListener(oppoScoreListener);
         gameThread.start();
     }
@@ -129,6 +141,7 @@ public class GameActivity extends AppCompatActivity {
         selfIsReady = true;
         oppoIsReady = true;
         oppoRef.child("score").removeEventListener(oppoScoreListener);
+        roomRef.removeEventListener(detectOppoLeavedListener);
         super.onDestroy();
     }
 
@@ -174,15 +187,10 @@ public class GameActivity extends AppCompatActivity {
     private void getQuest() {
         if(questNum > 4) {
             int[] tempScore = scoreBar.getScore();
-            if(tempScore[0] > tempScore[1]) {
-                ending(true);
-            }
+            if(tempScore[0] > tempScore[1])
+                ending(isPlayer1);
             else
-                ending(false);
-            roomRef.removeValue();
-            Intent intent = new Intent(GameActivity.this, MainActivity.class);
-            this.startActivity(intent);
-            this.finish();
+                ending(!isPlayer1);
             return;
         }
         roomRef.child("/quest/" + questNum++).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -263,10 +271,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void ending(boolean p1Win) {
+        roomRef.removeEventListener(detectOppoLeavedListener);
         oppoRef.child("score").removeEventListener(oppoScoreListener);
         endGame = true;
         selfIsReady = true;
         oppoIsReady = true;
+        roomRef.removeValue();
+//        Intent intent = new Intent(GameActivity.this, MainActivity.class);
+//        this.startActivity(intent);
+        this.finish();
     }
 
 }
