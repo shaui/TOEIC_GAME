@@ -44,12 +44,12 @@ public class ScoreBar extends View {
         canvas.drawRect(width * 0.05f, 0, spilt, height, p);
         p.setColor(colorB);
         canvas.drawRect(spilt, 0, width * 0.95f, height, p);
-        p.setColor(Color.BLACK);
+        p.setColor(Color.WHITE);
         p.setStrokeWidth(10);
         p.setTextSize(50);
         p.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(p1_score), width * 0.08f, height * 0.9f, p);
-        canvas.drawText(String.valueOf(p2_score), width * 0.92f, height * 0.9f, p);
+        canvas.drawText(String.valueOf(p1_score), width * 0.1f, height * 0.85f, p);
+        canvas.drawText(String.valueOf(p2_score), width * 0.9f, height * 0.85f, p);
     }
 
     public void setScore(boolean isP1, int num) {
