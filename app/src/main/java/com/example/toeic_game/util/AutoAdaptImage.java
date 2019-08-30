@@ -36,4 +36,21 @@ public class AutoAdaptImage {
 
         return BitmapFactory.decodeResource(res, resImg, options);
     }
+    /***************** method 1 *****************/
+    /*but use the final, so the view cannot change*/
+//    private void setImage(final View view, final int drawable){
+//        //post是為了在繪製前取得width, height
+//        view.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                reqWidth = view.getWidth();
+//                reqHeight = view.getHeight();
+//                Bitmap bitmap = AutoAdaptImage.decodeSampledBitmapFromResource(getResources(), drawable,
+//                        reqWidth, reqHeight);
+//                System.out.println("---Bitmap Byte Count---:" + bitmap.getByteCount());
+//                ((ImageView) view).setImageBitmap(bitmap);
+//                ((ImageView) view).setScaleType(ImageView.ScaleType.CENTER_CROP);
+//            }
+//        });
+//    }
 }
