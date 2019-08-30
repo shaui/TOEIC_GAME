@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "834582964987",
+    "firebase_url": "https://englishgame-55b1a.firebaseio.com",
+    "project_id": "englishgame-55b1a",
+    "storage_bucket": "englishgame-55b1a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834582964987:android:6a91721d8feaf692",
+        "android_client_info": {
+          "package_name": "com.example.toeic_game"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "834582964987-vrt6lloas3ficm8rcfii99kvmclko2ma.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.toeic_game",
+            "certificate_hash": "22ca3aac2bd0e275516719dfe9f9e36ebed93bb5"
+          }
+        },
+        {
+          "client_id": "834582964987-k7vf3s67uktbip5vj4et4v51r7j0qlfb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOVuUidxYFvJpsFJVOWPcQl_db4jOdW6Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "834582964987-k7vf3s67uktbip5vj4et4v51r7j0qlfb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
