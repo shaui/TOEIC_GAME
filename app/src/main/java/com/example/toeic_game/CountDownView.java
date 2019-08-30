@@ -8,7 +8,7 @@ import android.graphics.RectF;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
 
-public class CountDownView extends android.support.v7.widget.AppCompatImageView {
+public class CountDownView extends androidx.appcompat.widget.AppCompatImageView {
 
     private boolean ini = false;
     private int color = Color.GREEN;

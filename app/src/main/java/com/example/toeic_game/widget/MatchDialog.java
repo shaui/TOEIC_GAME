@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +12,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.example.toeic_game.GameActivity;
 import com.example.toeic_game.Player;
@@ -56,6 +57,9 @@ public class MatchDialog extends Dialog {
         setContentView(view);
         setDialogDimension();
 
+        //點擊邊框外面不會消失
+        setCanceledOnTouchOutside(false);
+
         //要放在setContentView下面，不然會找不到(好像)，除非是設定一些屬性
         tv_match_player = findViewById(R.id.tv_match_player);
         btn_cancel = findViewById(R.id.btn_cancel);
@@ -79,13 +83,18 @@ public class MatchDialog extends Dialog {
         int width = displayMetrics.widthPixels;
 //        int height = displayMetrics.heightPixels;
 
+        //設背景為圓框,好像會讓dialog變大
+        getWindow().setBackgroundDrawableResource(R.drawable.bg_rounded_rectangle);
+
         /*取得目前window的屬性*/
         WindowManager.LayoutParams wm_lp = getWindow().getAttributes();
+
         /*改變螢幕寬度*/
-        wm_lp.width = (int)(width*0.8);
-        wm_lp.height = (int)(width*0.8);
+        wm_lp.width = (int)(width*0.7);
+        wm_lp.height = (int)(width*0.7);
         /*重新設定螢幕屬性*/
         getWindow().setAttributes(wm_lp);
+
     }
 
     private void matchPlayer(){
