@@ -71,6 +71,7 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onTick(long millisUntilFinished) {
             timeTextView.setText(String.valueOf(millisUntilFinished / 1000));
+            animation.cancel();
             animation.start();
         }
     };
