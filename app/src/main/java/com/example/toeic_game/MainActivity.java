@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FirebaseAuth mAuth;
 
     //memberData
-    private Member member = null;
+    public static Member member = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoginListener loginListener = new LoginListener();
         google_login_btn.setOnClickListener(loginListener);
         anonymously_login_btn.setOnClickListener(loginListener);
-        isLogin = ckeckLoginStatus();
+        isLogin = checkLoginStatus();
 
         //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
         nav_header = navigationView.getHeaderView(0);
@@ -193,7 +193,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 else{
                     ToastUtil.showMsg(MainActivity.this, "Please log in to change the name");
                 }
-
             }
         });
     }
@@ -212,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     //check is a user has already signed in to app, if not null, that has already do it.
-    private boolean ckeckLoginStatus(){
+    private boolean checkLoginStatus(){
         //google account, because use the firebase, doesn't need to use the google account to check.
 //        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 
@@ -247,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
                                         isLogin = true;
+                                        nav_menu.findItem(R.id.nav_login).setVisible(false);
                                         Log.i("---success---", "signInAnonymously:success");
                                         myRef.child("members")
                                                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 tv_nav_name.setText(member.getName());
             }
             else{
-                member = new Member();
+                member = new Member("Guest");
                 dataSnapshot.child(currentUser.getUid()).getRef().setValue(member);
                 tv_nav_name.setText(member.getName());
             }
