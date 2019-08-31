@@ -33,6 +33,7 @@ public class ScoreBar extends View {
             path.addRoundRect(width * 0.05f, 0, width * 0.95f, height, height * 0.9f, height * 0.9f, Path.Direction.CW);
         }
         canvas.clipPath(path, Region.Op.INTERSECT);
+        super.onDraw(canvas);
         float spilt = 0;
         if(p1_score + p2_score == 0)
             spilt = 0.5f * width;
