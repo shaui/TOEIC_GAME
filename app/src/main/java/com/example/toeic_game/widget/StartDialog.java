@@ -11,23 +11,25 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.bumptech.glide.Glide;
 import com.example.toeic_game.R;
 import com.example.toeic_game.util.AutoAdaptImage;
 
 public class StartDialog extends Dialog {
 
-    private Button btn_start;
-    private ImageView iv_start;
-    private int reqWidth, reqHeight;
     private Context context;
+    private Button btn_start;
+    private TextView tv_rule;
     private int drawable;
+    private int reqWidth, reqHeight;
 
-
+    public StartDialog(@NonNull Context context) {
+        super(context);
+        this.context = context;
+    }
 
     public StartDialog(@NonNull Context context, int drawable) {
         super(context);
@@ -38,12 +40,37 @@ public class StartDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
-        iv_start = view.findViewById(R.id.iv_start);
-        iv_start.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        Glide.with(context).load(drawable).into(iv_start);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+        setContentView(view);
+        setDialogDimension();
+
+        //點擊邊框外面不會消失
+        setCanceledOnTouchOutside(true);
+
+        //要放在setContentView下面，不然會找不到(好像)，除非是設定一些屬性
+        tv_rule = findViewById(R.id.tv_rule);
+        tv_rule.setText("Rule:" + "\n" + "Please fellow the order of the word to click the corresponding Chinese explanation");
+        btn_start = findViewById(R.id.btn_start);
+        btn_start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MatchDialog matchDialog = new MatchDialog(context);
+                matchDialog.show();
+                dismiss();
+            }
+        });
+    }
+
+    private void onCreateWithPic(){
+        /*去除標題欄*/
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+//        ImageView iv_start = view.findViewById(R.id.iv_start);
+//        iv_start.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//        Glide.with(context).load(drawable).into(iv_start);
         setContentView(view);
 
         setDialogDimension();
@@ -52,8 +79,8 @@ public class StartDialog extends Dialog {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MatchDialog matchDialog = new MatchDialog(context, StartDialog.this);
-                matchDialog.show();
+//                MatchDialog matchDialog = new MatchDialog(context, StartDialog.this);
+//                matchDialog.show();
             }
         });
     }
@@ -67,13 +94,18 @@ public class StartDialog extends Dialog {
         int width = displayMetrics.widthPixels;
 //        int height = displayMetrics.heightPixels;
 
+        //設背景為圓框,好像會讓dialog變大
+        getWindow().setBackgroundDrawableResource(R.drawable.bg_rounded_rectangle);
+
         /*取得目前window的屬性*/
         WindowManager.LayoutParams wm_lp = getWindow().getAttributes();
+
         /*改變螢幕寬度*/
-        wm_lp.width = (int)(width*0.8);
-        wm_lp.height = (int)(width*0.8);
+        wm_lp.width = (int)(width*0.7);
+        wm_lp.height = (int)(width*0.7);
         /*重新設定螢幕屬性*/
         getWindow().setAttributes(wm_lp);
+
     }
 
     private void setBackground(final View view, final int drawable){
@@ -88,10 +120,7 @@ public class StartDialog extends Dialog {
                                 , reqWidth, reqHeight)
                 );
                 view.setBackground(db);
-
             }
         });
     }
-
-
 }

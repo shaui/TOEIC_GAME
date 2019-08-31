@@ -59,23 +59,23 @@ public class MainTabFragment extends Fragment {
             switch (v.getId()){
 
                 case R.id.riv_gmae_1:
-                    StartDialog startDialog1 = new StartDialog(context, R.drawable.bg_start_game1);
+                    StartDialog startDialog1 = new StartDialog(context);
                     startDialog1.show();
                     break;
                 case R.id.riv_gmae_2:
-                    StartDialog startDialog2 = new StartDialog(context, R.drawable.bg_start_game2);
-                    startDialog2.show();
+                    StartDialog startDialog = new StartDialog(context);
+                    startDialog.show();
                     break;
                 case R.id.riv_gmae_3:
-                    StartDialog startDialog3 = new StartDialog(context, R.drawable.bg_start_game3);
+                    StartDialog startDialog3 = new StartDialog(context);
                     startDialog3.show();
                     break;
                 case R.id.riv_gmae_4:
-                    StartDialog startDialog4 = new StartDialog(context, R.drawable.bg_start_game4);
+                    StartDialog startDialog4 = new StartDialog(context);
                     startDialog4.show();
                     break;
                 case R.id.riv_gmae_5:
-                    StartDialog startDialog5 = new StartDialog(context, R.drawable.bg_start_game5);
+                    StartDialog startDialog5 = new StartDialog(context);
                     startDialog5.show();
                     break;
             }
@@ -93,11 +93,11 @@ public class MainTabFragment extends Fragment {
         nestedScrollView.setBackgroundColor(ContextCompat.getColor(context, color));
 
         //setImages
-        Glide.with(context).load(R.drawable.bg_game_1).into(riv_game_1);
-        Glide.with(context).load(R.drawable.bg_game_2).into(riv_game_2);
-        Glide.with(context).load(R.drawable.bg_game_3).into(riv_game_3);
-        Glide.with(context).load(R.drawable.bg_game_4).into(riv_game_4);
-        Glide.with(context).load(R.drawable.bg_game_5).into(riv_game_5);
+        Glide.with(context).load(R.drawable.bg_start_game1).into(riv_game_1);
+        Glide.with(context).load(R.drawable.bg_start_game2).into(riv_game_2);
+        Glide.with(context).load(R.drawable.bg_start_game3).into(riv_game_3);
+        Glide.with(context).load(R.drawable.bg_start_game4).into(riv_game_4);
+        Glide.with(context).load(R.drawable.bg_start_game5).into(riv_game_5);
 
         //setListener
         StartOnclick startOnclick = new StartOnclick();
