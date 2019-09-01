@@ -24,7 +24,7 @@ import java.util.TreeMap;
 
 public class GameActivity extends AppCompatActivity {
 
-    private int questNum = 0, ansAt = 0, score = 0;
+    private int questNum = 0, ansAt = 0, score = 0, AIscore = 0;
     private boolean isPlayer1, hasAI, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
     private String[] quest;
 
@@ -61,7 +61,8 @@ public class GameActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        oppoRef.child("score").setValue(1000);
+        AIscore += 1000;
+        oppoRef.child("score").setValue(AIscore);
     };
 
     private MyCountDownTimer readyClock = new MyCountDownTimer(3000,1000) {
@@ -75,8 +76,9 @@ public class GameActivity extends AppCompatActivity {
             headP1.start(false);
             headP2.start(false);
             roundTimeClock.start();
-            if(hasAI)
+            if(hasAI) {
                 new Thread(updateAIScore).start();
+            }
         }
 
         @Override
