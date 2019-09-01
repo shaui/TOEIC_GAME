@@ -6,14 +6,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
-        android:id="@+id/tv_match_player"
+        android:id="@+id/tv_rule"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center"
-        android:text="matching player..."
         android:textAllCaps="false"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@id/btn_cancel"
+        android:text="Text"
+        app:layout_constraintBottom_toTopOf="@id/btn_start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,20 +24,20 @@
         android:layout_height="1dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_match_player"
-        app:layout_constraintBottom_toTopOf="@id/btn_cancel"
+        app:layout_constraintTop_toBottomOf="@id/tv_rule"
+        app:layout_constraintBottom_toTopOf="@id/btn_start"
         android:background="@color/colorGray"/>
 
     <Button
-        android:id="@+id/btn_cancel"
+        android:id="@+id/btn_start"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_match_player"
+        app:layout_constraintTop_toBottomOf="@id/tv_rule"
         android:textAllCaps="false"
-        android:text="CANCEL"
+        android:text="START"
         android:background="@drawable/bg_rounded_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

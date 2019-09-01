@@ -1,34 +1,61 @@
 package com.example.toeic_game;
 
+import android.content.Intent;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.core.view.GravityCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import com.bumptech.glide.Glide;
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
+import com.example.toeic_game.util.ToastUtil;
+import com.example.toeic_game.widget.NameDialog;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private  List<String> tabNameList;
+    private List<String> tabNameList;
     private TabLayout tabLayout;
     private View[] tabItems;
     private List<Fragment> tabFragment;
@@ -41,6 +68,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
 
     private int reqWidth, reqHeight;
+
+    //menu data
+    private Menu nav_menu = null;
+    private View nav_header = null;
+    private TextView nav_tv_name;
+    private RoundedImageView nav_riv_image_head;
+
+    //firebase
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
+    private boolean isLogin = false;
+    public static FirebaseUser currentUser;
+
+    //google登入
+    private SignInButton google_login_btn;
+    private Button anonymously_login_btn;
+    private GoogleSignInOptions gso;
+    private GoogleSignInClient googleSignInClient;
+    public static GoogleSignInAccount googleAccount;
+    private final int GOOGLE_SIGN_IN = 0;
+    private FirebaseAuth mAuth;
+
+    //memberData
+    public static Member member = new Member("Tester");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //把viewPager和tablayout關連起來
 //        viewPager.setOffscreenPageLimit(1); //預先加載頁面，不包刮當前頁面
-
         viewPager.setAdapter(tabFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
@@ -92,21 +142,241 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             tabLayout.getTabAt(i).setCustomView(tabItems[i]);
         }
 
-
         //nav_btn
         setBackground(btn_nav, R.drawable.icon_navigation_bar);
         btn_nav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawerLayout.openDrawer(Gravity.START);
+                drawerLayout.openDrawer(GravityCompat.START);
             }
         });
 
-
         //NavigationView
         navigationView.setNavigationItemSelectedListener(this);
+        //get menu by navigationView
+        nav_menu = navigationView.getMenu();
 
+        //firebbase
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference();
+        //firebase auth
+        mAuth = FirebaseAuth.getInstance();
 
+        /*google登入*/
+
+        //configure Google Sign-In to request the user data.
+        //The Options is mean that you con use variable method to get the different user data
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .requestProfile()
+                .build();
+
+        //Build a GoogleSignInClient with the options specified by gso.
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        //login button
+        google_login_btn = findViewById(R.id.google_login_btn);
+        setGooglePlusButtonText(google_login_btn, "Sign in with google");
+        anonymously_login_btn = findViewById(R.id.anonymously_login_btn);
+        LoginListener loginListener = new LoginListener();
+        google_login_btn.setOnClickListener(loginListener);
+        anonymously_login_btn.setOnClickListener(loginListener);
+
+        //check login status
+        isLogin = checkLoginStatus();
+
+        //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
+        nav_header = navigationView.getHeaderView(0);
+        nav_tv_name = nav_header.findViewById(R.id.tv_name);
+        nav_riv_image_head = nav_header.findViewById(R.id.riv_image_head);
+        setImageHead();
+
+        //添加底線
+        nav_tv_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
+        nav_tv_name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //登入才能改名字
+                if(isLogin){
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name, currentUser);
+                    nameDialog.show();
+                }
+                else{
+                    ToastUtil.showMsg(MainActivity.this, "Please log in to change the name");
+                }
+            }
+        });
+    }
+
+    protected void setImageHead(){
+        if(currentUser != null){
+            if(currentUser.getPhotoUrl() != null){
+                Glide.with(this).load(currentUser.getPhotoUrl()).into(nav_riv_image_head);
+            }
+            else{
+                Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+            }
+        }
+        else{
+            Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+        }
+    }
+
+    //set the text on the google login button
+    protected void setGooglePlusButtonText(SignInButton signInButton, String buttonText) {
+        // Find the TextView that is inside of the SignInButton and set its text
+        for (int i = 0; i < signInButton.getChildCount(); i++) {
+            View v = signInButton.getChildAt(i);
+            if (v instanceof TextView) {
+                TextView tv = (TextView) v;
+                tv.setText(buttonText);
+                return;
+            }
+        }
+    }
+
+    //check is a user has already signed in to app, if not null, that has already do it.
+    private boolean checkLoginStatus(){
+        //google account, because use the firebase, doesn't need to use the google account to check.
+        googleAccount = GoogleSignIn.getLastSignedInAccount(this);
+
+        //firebase auth
+        currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            myRef.child("members").addListenerForSingleValueEvent(new FirebaseDataListener());
+            return true;
+        }
+        else{
+            Log.i("---Login---", "Not yet Login in");
+            return false;
+        }
+    }
+
+    class FirebaseDataListener implements ValueEventListener{
+
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            updateUI(dataSnapshot);
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    }
+
+    class LoginListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.google_login_btn:
+                    drawerLayout.closeDrawer(GravityCompat.END);
+                    //Use the googleSignInClient to get the Intent to deliver data.
+                    Intent signInIntent = googleSignInClient.getSignInIntent();
+                    startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+                    break;
+                case R.id.anonymously_login_btn:
+                    drawerLayout.closeDrawer(GravityCompat.END);
+                    mAuth.signInAnonymously()
+                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if(task.isSuccessful()){
+                                        setLoginStatus();
+                                        Log.i("---success---", "signInAnonymously:success");
+                                        myRef.child("members")
+                                                .addListenerForSingleValueEvent(new FirebaseDataListener());
+                                    }
+                                    else{
+                                        Log.i("---fail---", "Login fail");
+                                    }
+                                }
+                            });
+                    break;
+            }
+        }
+    }
+
+    //set the login status, get the currentUser
+    public void setLoginStatus(){
+        isLogin = true;
+        nav_menu.findItem(R.id.nav_login).setVisible(false);
+        //get the currentUser
+        currentUser = mAuth.getCurrentUser();
+    }
+
+    //get the member, update the UI
+    private void updateUI(DataSnapshot dataSnapshot){
+        setImageHead();
+        if(currentUser != null){
+            if(dataSnapshot.child(currentUser.getUid()).exists()){
+                member = dataSnapshot.child(currentUser.getUid()).getValue(Member.class);
+                nav_tv_name.setText(member.getName());
+            }
+            else{
+                if(googleAccount != null){
+                    member = new Member(googleAccount.getDisplayName());
+                }
+                else{
+                    member = new Member("Guest");
+                }
+                dataSnapshot.child(currentUser.getUid()).getRef().setValue(member);
+                nav_tv_name.setText(member.getName());
+            }
+            ToastUtil.showMsg(MainActivity.this, "Welcome " + member.getName());
+        }
+        else{
+            Log.i("---Login---", "Doesn't find the user, fail");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+        switch (requestCode){
+            case GOOGLE_SIGN_IN:
+                //use the data to create a GoogleSignInAccount task
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                handleSignInResult(task);
+                break;
+        }
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            //use the task to get the account object.It can use to get the user information.
+            googleAccount = completedTask.getResult(ApiException.class);
+            firebaseAuthWithGoogle(googleAccount);
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            Log.w("---TAG---", "signInResult:failed code=" + e.getStatusCode());
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        //用accoutn.getIdToken取得ID，再用此ID取得credential
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        //mAuth用credential登入
+        mAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        setLoginStatus();
+                        myRef.child("members")
+                            .addListenerForSingleValueEvent(new FirebaseDataListener());
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        ToastUtil.showMsg(MainActivity.this, "Credential fail");
+                    }
+                }
+            });
     }
 
     private class MyOnTabSelectedListener implements TabLayout.OnTabSelectedListener{
@@ -187,10 +457,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (menuItem.getItemId()){
             case R.id.nav_login:
-                //
+                drawerLayout.closeDrawer(GravityCompat.START);
+                drawerLayout.openDrawer(GravityCompat.END);
                 break;
             case R.id.nav_logout:
-                //
+                //firebase's signOut,會緩存帳號，可下次案登入時不用選擇帳號
+                FirebaseAuth.getInstance().signOut();
+                //真正完全signOut，下次登入要重新選擇帳號
+                googleSignInClient.signOut();
+                ToastUtil.showMsg(MainActivity.this, "Logout");
+                resetData();
                 break;
             case R.id.nav_character:
                 //
@@ -203,6 +479,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    private void resetData(){
+        nav_menu.findItem(R.id.nav_login).setVisible(true);
+        nav_tv_name.setText("name");
+        isLogin = false;
+        member = new Member("Tester");
+        currentUser = null;
+        googleAccount = null;
     }
 
     class TabFragmentAdapter extends FragmentPagerAdapter {
