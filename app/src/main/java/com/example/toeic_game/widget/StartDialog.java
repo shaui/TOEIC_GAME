@@ -43,7 +43,7 @@ public class StartDialog extends Dialog {
 
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
         setContentView(view);
         setDialogDimension();
 
@@ -67,7 +67,7 @@ public class StartDialog extends Dialog {
     private void onCreateWithPic(){
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
 //        ImageView iv_start = view.findViewById(R.id.iv_start);
 //        iv_start.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //        Glide.with(context).load(drawable).into(iv_start);
