@@ -169,10 +169,7 @@ public class MatchDialog extends Dialog {
                         try {
                             Thread.sleep(20000);
                             isAI = true;
-                            tempRoomRef.removeEventListener(MatchListener.this);
-                            dismiss();
-                            deliverData();
-
+                            tempRoomRef.child("player2").setValue(new Player("AI"));
                         } catch (InterruptedException e) {
                             Log.i("---search---", "find the plyer2 or cancel the matching");
                         }
