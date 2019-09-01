@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 
 import com.example.toeic_game.GameActivity;
 import com.example.toeic_game.MainActivity;
-import com.example.toeic_game.Member;
 import com.example.toeic_game.Player;
 import com.example.toeic_game.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,7 +31,9 @@ public class MatchDialog extends Dialog {
     private Button btn_cancel;
     private TextView tv_match_player;
     private Context context;
-    private Member member;
+    private boolean isAI = false;
+    private Thread aiThread;
+    private MatchListener matchListener;
 
     //firebase usage parameter
     private FirebaseDatabase database;
@@ -75,6 +76,8 @@ public class MatchDialog extends Dialog {
             @Override
             public void onClick(View v) {
                 tempRoomRef.removeValue();
+                tempRoomRef.removeEventListener(matchListener);
+                aiThread.interrupt();
                 dismiss();
             }
         });
@@ -143,32 +146,8 @@ public class MatchDialog extends Dialog {
                 roomID = tempRoomRef.getKey();
 
                 //搜尋玩家
-                tempRoomRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
-                        //當player2不存在
-                        if (!dataSnapshot.child("quest").exists()){
-                            Log.i("---search---", "search player2");
-                        }
-                        else {
-                            //先刪除Listener,再跳轉
-                            tempRoomRef.removeEventListener(this);
-                            //關閉matchingDialog
-                            dismiss();
-                            Intent intent = new Intent(context, GameActivity.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putString("roomID", roomID);
-                            bundle.putBoolean("isPlayer1", isPlayer1);
-                            intent.putExtras(bundle);
-                            context.startActivity(intent);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                matchListener = new MatchListener();
+                tempRoomRef.addValueEventListener(matchListener);
             }
 
             @Override
@@ -178,4 +157,53 @@ public class MatchDialog extends Dialog {
         });
     }
 
+    private class MatchListener implements ValueEventListener{
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            //當player2不存在
+            if (!dataSnapshot.child("quest").exists()){
+                Log.i("---search---", "search player2");
+                aiThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(20000);
+                            isAI = true;
+                            tempRoomRef.removeEventListener(MatchListener.this);
+                            dismiss();
+                            deliverData();
+
+                        } catch (InterruptedException e) {
+                            Log.i("---search---", "find the plyer2 or cancel the matching");
+                        }
+                    }
+                });
+                aiThread.start();
+            }
+            else {
+                //先刪除Listener,再跳轉
+                tempRoomRef.removeEventListener(this);
+                //告知Thread已經中斷
+                aiThread.interrupt();
+                //關閉matchingDialog
+                dismiss();
+                deliverData();
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    }
+
+    private void deliverData(){
+        Intent intent = new Intent(context, GameActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("roomID", roomID);
+        bundle.putBoolean("isPlayer1", isPlayer1);
+        bundle.putBoolean("isAI", isAI);
+        intent.putExtras(bundle);
+        context.startActivity(intent);
+    }
 }

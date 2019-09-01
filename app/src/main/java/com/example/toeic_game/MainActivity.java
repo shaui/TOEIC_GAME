@@ -76,17 +76,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FirebaseDatabase database;
     private DatabaseReference myRef;
     private boolean isLogin = false;
+    public static FirebaseUser currentUser;
 
     //google登入
     private SignInButton google_login_btn;
     private Button anonymously_login_btn;
     private GoogleSignInOptions gso;
     private GoogleSignInClient googleSignInClient;
+    public static GoogleSignInAccount googleAccount;
     private final int GOOGLE_SIGN_IN = 0;
     private FirebaseAuth mAuth;
 
     //memberData
-    public static Member member = null;
+    public static Member member = new Member("Tester");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,10 +166,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
+                .requestProfile()
                 .build();
 
         //Build a GoogleSignInClient with the options specified by gso.
         googleSignInClient = GoogleSignIn.getClient(this, gso);
+
         //login button
         google_login_btn = findViewById(R.id.google_login_btn);
         setGooglePlusButtonText(google_login_btn, "Sign in with google");
@@ -174,6 +179,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoginListener loginListener = new LoginListener();
         google_login_btn.setOnClickListener(loginListener);
         anonymously_login_btn.setOnClickListener(loginListener);
+
+        //check login status
         isLogin = checkLoginStatus();
 
         //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
@@ -213,10 +220,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //check is a user has already signed in to app, if not null, that has already do it.
     private boolean checkLoginStatus(){
         //google account, because use the firebase, doesn't need to use the google account to check.
-//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        googleAccount = GoogleSignIn.getLastSignedInAccount(this);
 
         //firebase auth
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             myRef.child("members").addListenerForSingleValueEvent(new FirebaseDataListener());
             return true;
@@ -224,6 +231,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else{
             Log.i("---Login---", "Not yet Login in");
             return false;
+        }
+    }
+
+    class FirebaseDataListener implements ValueEventListener{
+
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            updateUI(dataSnapshot);
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
         }
     }
 
@@ -245,21 +265,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
-                                        isLogin = true;
-                                        nav_menu.findItem(R.id.nav_login).setVisible(false);
+                                        setLoginStatus();
                                         Log.i("---success---", "signInAnonymously:success");
                                         myRef.child("members")
-                                                .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                    @Override
-                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                        updateUI(dataSnapshot);
-                                                    }
-
-                                                    @Override
-                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                    }
-                                                });
+                                                .addListenerForSingleValueEvent(new FirebaseDataListener());
                                     }
                                     else{
                                         Log.i("---fail---", "Login fail");
@@ -271,28 +280,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    class FirebaseDataListener implements ValueEventListener{
-
-        @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            updateUI(dataSnapshot);
-        }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-        }
+    //set the login status, get the currentUser
+    public void setLoginStatus(){
+        isLogin = true;
+        nav_menu.findItem(R.id.nav_login).setVisible(false);
+        //get the currentUser
+        currentUser = mAuth.getCurrentUser();
     }
 
+    //get the member, update the UI
     private void updateUI(DataSnapshot dataSnapshot){
-        FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
             if(dataSnapshot.child(currentUser.getUid()).exists()){
                 member = dataSnapshot.child(currentUser.getUid()).getValue(Member.class);
                 tv_nav_name.setText(member.getName());
             }
             else{
-                member = new Member("Guest");
+                if(googleAccount != null){
+                    member = new Member(googleAccount.getDisplayName());
+                }
+                else{
+                    member = new Member("Guest");
+                }
                 dataSnapshot.child(currentUser.getUid()).getRef().setValue(member);
                 tv_nav_name.setText(member.getName());
             }
@@ -320,8 +329,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             //use the task to get the account object.It can use to get the user information.
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account);
+            googleAccount = completedTask.getResult(ApiException.class);
+            firebaseAuthWithGoogle(googleAccount);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
@@ -338,17 +347,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                        isLogin = true;
-                        //檢查資料庫是否有資料，並更新member物件
+                        setLoginStatus();
                         myRef.child("members")
                             .addListenerForSingleValueEvent(new FirebaseDataListener());
-                        //修改UI
-                        if(nav_menu != null){
-                            nav_menu.findItem(R.id.nav_login).setVisible(false);
-                        }
-                        else{
-                            ToastUtil.showMsg(MainActivity.this, "menu is null");
-                        }
                     } else {
                         // If sign in fails, display a message to the user.
                         ToastUtil.showMsg(MainActivity.this, "Credential fail");
@@ -444,9 +445,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //真正完全signOut，下次登入要重新選擇帳號
                 googleSignInClient.signOut();
                 ToastUtil.showMsg(MainActivity.this, "Logout");
-                nav_menu.findItem(R.id.nav_login).setVisible(true);
-                tv_nav_name.setText("name");
-                isLogin = false;
+                resetData();
                 break;
             case R.id.nav_character:
                 //
@@ -459,6 +458,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    private void resetData(){
+        nav_menu.findItem(R.id.nav_login).setVisible(true);
+        tv_nav_name.setText("name");
+        isLogin = false;
+        member = new Member("Tester");
+        currentUser = null;
+        googleAccount = null;
     }
 
     class TabFragmentAdapter extends FragmentPagerAdapter {
