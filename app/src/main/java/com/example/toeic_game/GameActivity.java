@@ -61,7 +61,7 @@ public class GameActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        oppoRef.setValue(1000);
+        oppoRef.child("score").setValue(1000);
     };
 
     private MyCountDownTimer readyClock = new MyCountDownTimer(3000,1000) {
