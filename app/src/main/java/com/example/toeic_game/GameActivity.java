@@ -171,6 +171,7 @@ public class GameActivity extends AppCompatActivity {
         questTextView = findViewById(R.id.quest);
         setPlayerData();
         for(int i = 0; i < 4; i++) {
+            ans[i].setEnabled(false);
             setAnsButtonEvent(i);
         }
         roomRef.addValueEventListener(detectOppoLeavedListener);
