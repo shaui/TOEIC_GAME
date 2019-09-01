@@ -11,7 +11,7 @@ import android.util.AttributeSet;
 
 import com.example.toeic_game.widget.MyCountDownTimer;
 
-public class CountDownView extends android.support.v7.widget.AppCompatImageView {
+public class CountDownView extends androidx.appcompat.widget.AppCompatImageView {
 
     private boolean ini = false;
     private int color = Color.GREEN;

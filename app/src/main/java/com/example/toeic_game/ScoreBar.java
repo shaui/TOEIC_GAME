@@ -14,6 +14,7 @@ public class ScoreBar extends View {
 
     private boolean ini = false;
     private int p1_score = 0, p2_score = 0, colorA = Color.RED, colorB = Color.BLUE, width, height;
+    private float barLeft, barRight, scoreText_P1, scoreText_P2, scoreTextY;
     private Paint p;
     private Path path;
 
@@ -21,6 +22,7 @@ public class ScoreBar extends View {
         super(context, attrs);
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setStrokeWidth(5);
+        p.setTextSize(50);
         path = new Path();
     }
 
@@ -30,10 +32,14 @@ public class ScoreBar extends View {
             ini = true;
             width = getMeasuredWidth();
             height = getMeasuredHeight();
-            path.addRoundRect(width * 0.05f, 0, width * 0.95f, height, height * 0.9f, height * 0.9f, Path.Direction.CW);
+            barLeft = width * 0.05f;
+            barRight = width * 0.95f;
+            scoreText_P1 = width * 0.1f;
+            scoreText_P2 = width * 0.9f;
+            scoreTextY = height * 0.85f;
+            path.addRoundRect(barLeft, 0, barRight, height, height * 0.9f, height * 0.9f, Path.Direction.CW);
         }
         canvas.clipPath(path, Region.Op.INTERSECT);
-        super.onDraw(canvas);
         float spilt = 0;
         if(p1_score + p2_score == 0)
             spilt = 0.5f * width;
@@ -42,15 +48,15 @@ public class ScoreBar extends View {
         Log.i("P1 Score", String.valueOf(p1_score));
         Log.i("P2 Score", String.valueOf(p2_score));
         p.setColor(colorA);
-        canvas.drawRect(width * 0.05f, 0, spilt, height, p);
+        canvas.drawRect(barLeft, 0, spilt, height, p);
         p.setColor(colorB);
-        canvas.drawRect(spilt, 0, width * 0.95f, height, p);
+        canvas.drawRect(spilt, 0, barRight, height, p);
         p.setColor(Color.WHITE);
-        p.setStrokeWidth(10);
-        p.setTextSize(50);
+
+
         p.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(p1_score), width * 0.1f, height * 0.85f, p);
-        canvas.drawText(String.valueOf(p2_score), width * 0.9f, height * 0.85f, p);
+        canvas.drawText(String.valueOf(p1_score), scoreText_P1, scoreTextY, p);
+        canvas.drawText(String.valueOf(p2_score), scoreText_P2, scoreTextY, p);
     }
 
     public void setScore(boolean isP1, int num) {

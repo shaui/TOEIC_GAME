@@ -2,8 +2,8 @@ package com.example.toeic_game;
 
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,12 +25,12 @@ import java.util.TreeMap;
 public class GameActivity extends AppCompatActivity {
 
     private int questNum = 0, ansAt = 0, score = 0;
-    private boolean isPlayer1, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
+    private boolean isPlayer1, hasAI, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
     private String[] quest;
 
     private CountDownView headP1, headP2;
     private ScoreBar scoreBar;
-    private TextView timeTextView, questTextView;
+    private TextView timeTextView, questTextView, nameP1, nameP2;
     private Button[] ans = new Button[4];
     private AnimatorSet animation;
 
@@ -55,6 +55,15 @@ public class GameActivity extends AppCompatActivity {
         }
     });
 
+    private Runnable updateAIScore = () -> {
+        try {
+            Thread.sleep(Math.round(Math.random() * 5000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        oppoRef.setValue(1000);
+    };
+
     private MyCountDownTimer readyClock = new MyCountDownTimer(3000,1000) {
         @Override
         public void onFinish() {
@@ -66,6 +75,8 @@ public class GameActivity extends AppCompatActivity {
             headP1.start(false);
             headP2.start(false);
             roundTimeClock.start();
+            if(hasAI)
+                new Thread(updateAIScore).start();
         }
 
         @Override
@@ -129,6 +140,7 @@ public class GameActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         try {
             isPlayer1 = bundle.getBoolean("isPlayer1");
+            hasAI = bundle.getBoolean("isAI");
             roomRef = FirebaseDatabase.getInstance().getReference().child("room/" + bundle.getString("roomID"));
         }
         catch (NullPointerException e) {
@@ -144,6 +156,8 @@ public class GameActivity extends AppCompatActivity {
         }
         headP1 = findViewById(R.id.p1_head);
         headP2 = findViewById(R.id.p2_head);
+        nameP1 = findViewById(R.id.p1_name);
+        nameP2 = findViewById(R.id.p2_name);
         scoreBar = findViewById(R.id.score_bar);
         ans[0] = findViewById(R.id.ans1);
         ans[1] = findViewById(R.id.ans2);
@@ -195,14 +209,17 @@ public class GameActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(isPlayer1) {
                     self = dataSnapshot.child("player1").getValue(Player.class);
+                    nameP1.setText(self.getName());
                     oppo = dataSnapshot.child("player2").getValue(Player.class);
+                    nameP2.setText(oppo.getName());
                 }
                 else {
                     self = dataSnapshot.child("player2").getValue(Player.class);
+                    nameP2.setText(self.getName());
                     oppo = dataSnapshot.child("player1").getValue(Player.class);
+                    nameP1.setText(oppo.getName());
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {};
         });
