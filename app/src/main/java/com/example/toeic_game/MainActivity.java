@@ -23,6 +23,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
 import com.example.toeic_game.util.ToastUtil;
@@ -47,6 +48,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //menu data
     private Menu nav_menu = null;
     private View nav_header = null;
-    private TextView tv_nav_name;
+    private TextView nav_tv_name;
+    private RoundedImageView nav_riv_image_head;
 
     //firebase
     private FirebaseDatabase database;
@@ -185,16 +188,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
         nav_header = navigationView.getHeaderView(0);
-        tv_nav_name = nav_header.findViewById(R.id.tv_name);
+        nav_tv_name = nav_header.findViewById(R.id.tv_name);
+        nav_riv_image_head = nav_header.findViewById(R.id.riv_image_head);
+        setImageHead();
+
         //添加底線
-        tv_nav_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        tv_nav_name.setOnClickListener(new View.OnClickListener() {
+        nav_tv_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
+        nav_tv_name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //登入才能改名字
                 if(isLogin){
                     FirebaseUser currentUser = mAuth.getCurrentUser();
-                    NameDialog nameDialog = new NameDialog(MainActivity.this, tv_nav_name, currentUser);
+                    NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name, currentUser);
                     nameDialog.show();
                 }
                 else{
@@ -202,6 +208,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             }
         });
+    }
+
+    protected void setImageHead(){
+        if(currentUser != null){
+            if(currentUser.getPhotoUrl() != null){
+                Glide.with(this).load(currentUser.getPhotoUrl()).into(nav_riv_image_head);
+            }
+            else{
+                Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+            }
+        }
+        else{
+            Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+        }
     }
 
     //set the text on the google login button
@@ -290,10 +310,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //get the member, update the UI
     private void updateUI(DataSnapshot dataSnapshot){
+        setImageHead();
         if(currentUser != null){
             if(dataSnapshot.child(currentUser.getUid()).exists()){
                 member = dataSnapshot.child(currentUser.getUid()).getValue(Member.class);
-                tv_nav_name.setText(member.getName());
+                nav_tv_name.setText(member.getName());
             }
             else{
                 if(googleAccount != null){
@@ -303,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     member = new Member("Guest");
                 }
                 dataSnapshot.child(currentUser.getUid()).getRef().setValue(member);
-                tv_nav_name.setText(member.getName());
+                nav_tv_name.setText(member.getName());
             }
             ToastUtil.showMsg(MainActivity.this, "Welcome " + member.getName());
         }
@@ -462,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void resetData(){
         nav_menu.findItem(R.id.nav_login).setVisible(true);
-        tv_nav_name.setText("name");
+        nav_tv_name.setText("name");
         isLogin = false;
         member = new Member("Tester");
         currentUser = null;

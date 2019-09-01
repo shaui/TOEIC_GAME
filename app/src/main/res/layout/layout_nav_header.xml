@@ -6,7 +6,7 @@
     android:background="@color/colorGray">
 
     <com.makeramen.roundedimageview.RoundedImageView
-        android:id="@+id/rv_image_head"
+        android:id="@+id/riv_image_head"
         android:layout_width="60dp"
         android:layout_height="60dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -15,8 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:riv_border_width="2dp"
         app:riv_oval="true"
-        app:riv_border_color="@color/colorBlackTransparent99"
-        android:src="@drawable/icon_image_head" />
+        app:riv_border_color="@color/colorBlackTransparent99" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_1"
@@ -32,14 +31,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="@id/gl_1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rv_image_head"
+        app:layout_constraintTop_toBottomOf="@id/riv_image_head"
         android:text="name"
         android:textAllCaps="false"
         android:textColor="@drawable/bg_text_name" />
 
     <TextView
         android:id="@+id/tv_money"
-        app:layout_constraintStart_toEndOf="@id/rv_image_head"
+        app:layout_constraintStart_toEndOf="@id/riv_image_head"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tv_point"
         android:layout_width="wrap_content"
@@ -51,7 +50,7 @@
 
     <TextView
         android:id="@+id/tv_point"
-        app:layout_constraintStart_toEndOf="@id/rv_image_head"
+        app:layout_constraintStart_toEndOf="@id/riv_image_head"
         app:layout_constraintTop_toBottomOf="@id/tv_money"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="wrap_content"
