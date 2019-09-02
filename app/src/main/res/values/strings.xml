@@ -5,4 +5,6 @@
     <string name="nav_logoutID">nav_logout</string>
     <string name="nav_login_title">Login</string>
     <string name="nav_logout_title">Logout</string>
+
+    <string name="game_readyText">Start!!!</string>
 </resources>

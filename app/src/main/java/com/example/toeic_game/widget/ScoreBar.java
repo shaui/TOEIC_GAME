@@ -1,4 +1,4 @@
-package com.example.toeic_game;
+package com.example.toeic_game.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;

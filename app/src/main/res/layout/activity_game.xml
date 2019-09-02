@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".GameActivity">
 
-    <com.example.toeic_game.CountDownView
+    <com.example.toeic_game.widget.CountDownView
         android:id="@+id/p1_head"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="@+id/p1_left"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.toeic_game.CountDownView
+    <com.example.toeic_game.widget.CountDownView
         android:id="@+id/p2_head"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -84,7 +84,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.475" />
 
-    <com.example.toeic_game.borderView
+    <com.example.toeic_game.widget.BorderView
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/text_bottom"
@@ -201,7 +201,7 @@
         app:layout_constraintStart_toStartOf="@+id/ans_middle_V"
         app:layout_constraintTop_toTopOf="@+id/ans_middle_H" />
 
-    <com.example.toeic_game.ScoreBar
+    <com.example.toeic_game.widget.ScoreBar
         android:id="@+id/score_bar"
         android:layout_width="0dp"
         android:layout_height="0dp"

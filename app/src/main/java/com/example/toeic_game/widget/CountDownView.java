@@ -1,4 +1,4 @@
-package com.example.toeic_game;
+package com.example.toeic_game.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,8 +8,6 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.AttributeSet;
-
-import com.example.toeic_game.widget.MyCountDownTimer;
 
 public class CountDownView extends androidx.appcompat.widget.AppCompatImageView {
 

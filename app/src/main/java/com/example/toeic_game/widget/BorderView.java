@@ -1,4 +1,4 @@
-package com.example.toeic_game;
+package com.example.toeic_game.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,14 +7,14 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class borderView extends View {
+public class BorderView extends View {
 
     private boolean ini = false;
     private int width, height;
     private Paint p;
     private RectF rect;
 
-    public borderView(Context context, AttributeSet attrs) {
+    public BorderView(Context context, AttributeSet attrs) {
         super(context, attrs);
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setStrokeWidth(8);

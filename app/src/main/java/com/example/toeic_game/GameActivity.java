@@ -11,7 +11,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.toeic_game.widget.CountDownView;
 import com.example.toeic_game.widget.MyCountDownTimer;
+import com.example.toeic_game.widget.ScoreBar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,7 +26,7 @@ import java.util.TreeMap;
 
 public class GameActivity extends AppCompatActivity {
 
-    private int questNum = 0, ansAt = 0, score = 0, AIscore = 0;
+    private int questNum = 0, ansAt = 0, score = 0, AIscore = 0, ansWrong = 0, time = 0;
     private boolean isPlayer1, hasAI, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
     private String[] quest;
 
@@ -40,9 +42,11 @@ public class GameActivity extends AppCompatActivity {
     private TreeMap<String, Integer> randomOptions = new TreeMap<>((String o1, String o2) -> Math.random() > 0.5 ? 1 : -1);
     private Entry<String, Integer>[] optionList = new Entry[4];
 
+    //控制遊戲流程
     private Thread gameThread = new Thread(() -> {
         while(!endGame) {
             getQuest();
+            //等待玩家答題完畢
             while(!oppoIsReady || !selfIsReady) {
                 try {
                     Thread.sleep(40);
@@ -55,41 +59,50 @@ public class GameActivity extends AppCompatActivity {
         }
     });
 
+    //虛擬對手
     private Runnable updateAIScore = () -> {
+        double sleepTime = Math.random();
         try {
-            Thread.sleep(Math.round(Math.random() * 5000));
+            Thread.sleep(Math.round(sleepTime * 5000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        AIscore += 1000;
+        int AIscoreTemp = (int) Math.round(500 * sleepTime) + 500;
+        AIscoreTemp -= Math.round(Math.random() * 4) *100;
+        AIscore += AIscoreTemp;
         oppoRef.child("score").setValue(AIscore);
     };
 
+    //執行準備動畫，結束後顯示題目
     private MyCountDownTimer readyClock = new MyCountDownTimer(3000,1000) {
         @Override
         public void onFinish() {
             animation.cancel();
+            //復原文字大小
             timeTextView.setScaleX(1.0f);
             timeTextView.setScaleY(1.0f);
-            timeTextView.setText("Start!!");
+            timeTextView.setText(R.string.game_readyText);
             displayQuest();
             headP1.start(false);
             headP2.start(false);
             roundTimeClock.start();
-            if(hasAI) {
+            if(hasAI)
                 new Thread(updateAIScore).start();
-            }
         }
 
         @Override
         public void onTick(long millisUntilFinished) {
             timeTextView.setText(String.valueOf(millisUntilFinished / 1000));
+            /* 動畫在下次執行前要取消掉
+            不然在執行完之前 無法再次執行
+             不會報錯 可是會看不見 */
             animation.cancel();
             animation.start();
         }
     };
 
-    private MyCountDownTimer roundTimeClock = new MyCountDownTimer(5000, 5000) {
+    //5秒過後強制結算分數
+    private MyCountDownTimer roundTimeClock = new MyCountDownTimer(5000, 100) {
         @Override
         public void onFinish() {
             for(int i = 0; i < 4; i++)
@@ -99,20 +112,19 @@ public class GameActivity extends AppCompatActivity {
 
         @Override
         public void onTick(long millisLeft) {
-
+            time = (int) millisLeft;
         }
     };
 
+    //更新對手分數
     private ValueEventListener oppoScoreListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if(initialed && dataSnapshot.getValue(Integer.class) != null) {
-                if(isPlayer1) {
+                if(isPlayer1)
                     headP2.pause();
-                }
-                else {
+                else
                     headP1.pause();
-                }
                 scoreBar.setScore(!isPlayer1, dataSnapshot.getValue(Integer.class) );
                 oppoIsReady = true;
             }
@@ -123,12 +135,13 @@ public class GameActivity extends AppCompatActivity {
         public void onCancelled(@NonNull DatabaseError databaseError) { }
     };
 
+
+    //確認玩家都在房間內
     private ValueEventListener detectOppoLeavedListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            if(!dataSnapshot.child("player1").exists() || !dataSnapshot.child("player2").exists()) {
+            if(!dataSnapshot.child("player1").exists() || !dataSnapshot.child("player2").exists())
                 ending(isPlayer1);
-            }
         }
 
         @Override
@@ -140,14 +153,9 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         Bundle bundle = getIntent().getExtras();
-        try {
-            isPlayer1 = bundle.getBoolean("isPlayer1");
-            hasAI = bundle.getBoolean("isAI");
-            roomRef = FirebaseDatabase.getInstance().getReference().child("room/" + bundle.getString("roomID"));
-        }
-        catch (NullPointerException e) {
-            e.printStackTrace();
-        }
+        isPlayer1 = bundle.getBoolean("isPlayer1");
+        hasAI = bundle.getBoolean("isAI");
+        roomRef = FirebaseDatabase.getInstance().getReference().child("room" + bundle.getString("roomID"));
         if(isPlayer1) {
             selfRef = roomRef.child("player1");
             oppoRef = roomRef.child("player2");
@@ -192,6 +200,7 @@ public class GameActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    //設置按鈕事件
     private void setAnsButtonEvent(final int num) {
         ans[num].setOnClickListener((View v) -> {
                 if(ansAt == optionList[num].getValue()) {
@@ -200,12 +209,12 @@ public class GameActivity extends AppCompatActivity {
                     if(ansAt == 4)
                         nextRound();
                 }
-                else {
-                }
+                else
+                    ansWrong++;
         });
     }
 
-    //我覺得現在可以先不用
+    //設定玩家資料
     private void setPlayerData() {
         roomRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -224,20 +233,21 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {};
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
+        //設置頭像
         Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP1);
         Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP2);
     }
 
-    //回合開始 先抓完題目才準備開始
+    //回合開始，先抓完題目才準備開始
     private void getQuest() {
         if(questNum > 4) {
             int[] tempScore = scoreBar.getScore();
             if(tempScore[0] > tempScore[1])
-                ending(isPlayer1);
+                ending(true);
             else
-                ending(!isPlayer1);
+                ending(false);
             return;
         }
         roomRef.child("/quest/" + questNum++).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -255,18 +265,18 @@ public class GameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {};
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
     }
 
-    //正式開始
+    //顯示題目
     private void displayQuest() {
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < 4; i++) {
+        for(int i = 0; i < ans.length; i++) {
             builder.append(quest[i]);
-            if(i != 3) {
+            //最後一次不換行
+            if(i != ans.length - 1)
                 builder.append("\n");
-            }
             optionList[i] = randomOptions.pollFirstEntry();
             ans[i].setText(optionList[i].getKey());
             ans[i].setEnabled(true);
@@ -274,19 +284,33 @@ public class GameActivity extends AppCompatActivity {
         questTextView.setText(builder.toString());
     }
 
-    //分數處理也在這裡
+    //回合結束，分數上傳
     private void nextRound() {
         roundTimeClock.cancel();
-        ansAt = 0;
         if(isPlayer1)
             headP1.pause();
         else
             headP2.pause();
         Log.i("P1 remaining time ", String.valueOf(headP1.getRemainingTime()));
-        score += 1000; // 暫時有的分數
+        score += countScore();
         scoreBar.setScore(isPlayer1, score);
         selfRef.child("score").setValue(score);
+        ansAt = 0;
         selfIsReady = true;
+    }
+
+    //計算分數
+    private int countScore() {
+        int tempScore = 0;
+        if(ansWrong > 0)
+            tempScore = ansWrong * -100;
+        else
+            tempScore = 200;
+        if(ansAt == 4)
+            tempScore += 500 * time / 5000 + 500;
+        if(tempScore < 0)
+            tempScore = 0;
+        return tempScore;
     }
 
     private void ending(boolean p1Win) {
