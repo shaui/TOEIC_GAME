@@ -14,10 +14,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.toeic_game.MainActivity;
 import com.example.toeic_game.Member;
 import com.example.toeic_game.R;
 import com.example.toeic_game.util.ToastUtil;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,13 +34,11 @@ public class NameDialog extends Dialog {
     private EditText et_name;
     private Button btn_alert;
     private TextView tv_nav_name;
-    private FirebaseUser currentUser;
 
-    public NameDialog(@NonNull Context context, TextView tv_nav_name, FirebaseUser currentUser) {
+    public NameDialog(@NonNull Context context, TextView tv_nav_name) {
         super(context);
         this.context = context;
         this.tv_nav_name = tv_nav_name;
-        this.currentUser = currentUser;
     }
 
     @Override
@@ -68,8 +66,8 @@ public class NameDialog extends Dialog {
                     }
                     else {
                         tv_nav_name.setText(name);
-                        if(currentUser != null){
-                            myRef.child("members").child(currentUser.getUid())
+                        if(MainActivity.currentUser != null){
+                            myRef.child("members").child(MainActivity.currentUser.getUid())
                                     .addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

@@ -9,6 +9,7 @@
         android:id="@+id/riv_image_head"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="@id/gl_1"
         app:layout_constraintTop_toTopOf="parent"

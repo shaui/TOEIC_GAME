@@ -1,10 +1,17 @@
 package com.example.toeic_game;
 
+import android.Manifest;
+import android.content.ContentUris;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +23,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -27,6 +35,7 @@ import com.bumptech.glide.Glide;
 import com.example.toeic_game.fragment.MainTabFragment;
 import com.example.toeic_game.util.AutoAdaptImage;
 import com.example.toeic_game.util.ToastUtil;
+import com.example.toeic_game.widget.LoadingDialog;
 import com.example.toeic_game.widget.NameDialog;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -34,6 +43,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -48,8 +58,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.makeramen.roundedimageview.RoundedImageView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DatabaseReference myRef;
     private boolean isLogin = false;
     public static FirebaseUser currentUser;
+
+    //firebase-storage
+    private final int CAMERA_REQUEST = 1;
+    int permission;
+    private final int REQUEST_EXTERNEL_PERMISSION = 2;
 
     //google登入
     private SignInButton google_login_btn;
@@ -190,7 +209,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         nav_header = navigationView.getHeaderView(0);
         nav_tv_name = nav_header.findViewById(R.id.tv_name);
         nav_riv_image_head = nav_header.findViewById(R.id.riv_image_head);
-        setImageHead();
+        permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+        nav_riv_image_head.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                //API23以上需要做這個檢查
+                if(isLogin){
+                    if(permission != PackageManager.PERMISSION_GRANTED){
+                        //未取得權限，向使用者要求允許權限
+                        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                permissions, REQUEST_EXTERNEL_PERMISSION );
+                    }
+                    else {
+                        //已有權限，可進行檔案存取
+                        getLocalImage();
+                    }
+                }
+                else {
+                    ToastUtil.showMsg(MainActivity.this, "Fail, please check if you have logged in");
+                }
+
+
+            }
+        });
 
         //添加底線
         nav_tv_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
@@ -199,8 +244,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View v) {
                 //登入才能改名字
                 if(isLogin){
-                    FirebaseUser currentUser = mAuth.getCurrentUser();
-                    NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name, currentUser);
+                    NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name);
                     nameDialog.show();
                 }
                 else{
@@ -210,18 +254,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    protected void setImageHead(){
-        if(currentUser != null){
-            if(currentUser.getPhotoUrl() != null){
-                Glide.with(this).load(currentUser.getPhotoUrl()).into(nav_riv_image_head);
-            }
-            else{
-                Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
-            }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_EXTERNEL_PERMISSION:
+                getLocalImage();
+                break;
         }
-        else{
-            Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
-        }
+    }
+
+    private void getLocalImage(){
+        //Intent.ACTION_GET_CONTENT，系統就會幫使用者找到裝置內合適的App來取得指定MIME類型的內容
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        //設定MIME類型
+        intent.setType("image/*");
+        //只能選取local端的檔案
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+
+        Intent chooseAPPIntent = Intent.createChooser(intent, "Choose the App to use");
+        startActivityForResult(chooseAPPIntent, CAMERA_REQUEST);
     }
 
     //set the text on the google login button
@@ -310,12 +362,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //get the member, update the UI
     private void updateUI(DataSnapshot dataSnapshot){
-        setImageHead();
         if(currentUser != null){
+            //如果已經有資料
             if(dataSnapshot.child(currentUser.getUid()).exists()){
                 member = dataSnapshot.child(currentUser.getUid()).getValue(Member.class);
                 nav_tv_name.setText(member.getName());
+                //如果已經設置自己的頭像
+                if(!member.getImgURL().isEmpty()){
+                    Glide.with(this).load(member.getImgURL()).into(nav_riv_image_head);
+                }
+                else {
+                    //使用默認頭像
+                    Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+                }
             }
+            //初始化資料
             else{
                 if(googleAccount != null){
                     member = new Member(googleAccount.getDisplayName());
@@ -325,6 +386,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 dataSnapshot.child(currentUser.getUid()).getRef().setValue(member);
                 nav_tv_name.setText(member.getName());
+                //使用默認頭像
+                Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
             }
             ToastUtil.showMsg(MainActivity.this, "Welcome " + member.getName());
         }
@@ -344,7 +407,106 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 handleSignInResult(task);
                 break;
+            case CAMERA_REQUEST:
+                if(data != null){
+                    String path = handleImageOnKitKat(data);
+                    Uri file = Uri.fromFile(new File(path));
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    StorageReference storageRef = storage.getReference();
+                    StorageReference tempRef = storageRef.child("images/"+file.getLastPathSegment());
+                    //開始上傳
+                    UploadTask uploadTask = tempRef.putFile(file);
+                    LoadingDialog loadingDialog = new LoadingDialog(this, uploadTask);
+                    loadingDialog.show();
+
+                    //先upload結束,才執行getDownloadUrl()
+                    Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+
+                            }else{
+
+                            }
+                            // Continue with the task to get the download URL
+                            return tempRef.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            //如果上傳成功
+                            if (uploadTask.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                String imgURL = downloadUri.toString();
+                                myRef.child("members").child(currentUser.getUid()).child("imgURL").setValue(imgURL);
+                                Glide.with(MainActivity.this).load(imgURL).into(nav_riv_image_head);
+                                if(loadingDialog.isShowing()){
+                                    loadingDialog.dismiss();
+                                }
+                                ToastUtil.showMsg(MainActivity.this, "Success");
+                            }
+                            else if (uploadTask.isCanceled()) {
+                                if(loadingDialog.isShowing()){
+                                    loadingDialog.dismiss();
+                                }
+                            }
+                            else {
+                                if(loadingDialog.isShowing()){
+                                    loadingDialog.dismiss();
+                                }
+                                ToastUtil.showMsg(MainActivity.this, "Fail");
+                                // Handle failures
+                                // ...
+                            }
+
+                        }
+                    });
+                }
+                break;
         }
+    }
+
+    //處理一些版本不同可能遇到的問題，主要在於Uri返回可能不同，造成不同結果。
+    //https://www.itread01.com/content/1550456105.html
+    private String handleImageOnKitKat(Intent data) {
+        String imagePath = null;
+        //URI(uniform resource identifier)用來指定一個資源
+        Uri uri = data.getData();
+
+        if (DocumentsContract.isDocumentUri(this, uri)) {
+            String docId = DocumentsContract.getDocumentId(uri);
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                //Log.d(TAG, uri.toString());
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                //Log.d(TAG, uri.toString());
+                Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"),
+                        Long.valueOf(docId));
+                imagePath = getImagePath(contentUri, null);
+            }
+            return imagePath;
+        } else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            //Log.d(TAG, "content: " + uri.toString());
+            imagePath = getImagePath(uri, null);
+            return imagePath;
+        }
+        return imagePath;
+    }
+
+    private String getImagePath(Uri uri, String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver().query(uri, null, selection, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+
+            cursor.close();
+        }
+        return path;
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
@@ -488,6 +650,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         member = new Member("Tester");
         currentUser = null;
         googleAccount = null;
+        Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
     }
 
     class TabFragmentAdapter extends FragmentPagerAdapter {

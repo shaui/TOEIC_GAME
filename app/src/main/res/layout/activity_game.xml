@@ -64,18 +64,25 @@
         app:layout_constraintGuide_percent="0.95" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/scoreBar_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.195" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/text_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.215" />
+        app:layout_constraintGuide_percent="0.23" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/text_bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.45" />
+        app:layout_constraintGuide_percent="0.475" />
 
     <com.example.toeic_game.borderView
         android:layout_width="0dp"
@@ -83,7 +90,7 @@
         app:layout_constraintBottom_toTopOf="@+id/text_bottom"
         app:layout_constraintEnd_toStartOf="@+id/p2_right"
         app:layout_constraintStart_toStartOf="@+id/p1_left"
-        app:layout_constraintTop_toTopOf="@+id/text_top"/>
+        app:layout_constraintTop_toTopOf="@+id/text_top" />
 
     <TextView
         android:id="@+id/quest"
@@ -101,74 +108,46 @@
         app:layout_constraintTop_toTopOf="@+id/text_top" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans1_top"
+        android:id="@+id/ans_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.485" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans1_bottom"
+        android:id="@+id/ans_middle_H"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.585" />
+        app:layout_constraintGuide_percent="0.725" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans2_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.59" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans2_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.69" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans3_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.695" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans3_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.795" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans4_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.8" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/ans4_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.9" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/button_left"
+        android:id="@+id/ans_middle_V"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.15" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/button_right"
+        android:id="@+id/ans_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/ans_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.85" />
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/ans_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
 
     <Button
         android:id="@+id/ans1"
@@ -178,10 +157,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/ans1_bottom"
-        app:layout_constraintEnd_toStartOf="@+id/button_right"
-        app:layout_constraintStart_toStartOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="@+id/ans1_top" />
+        app:layout_constraintBottom_toTopOf="@+id/ans_middle_H"
+        app:layout_constraintEnd_toStartOf="@+id/ans_middle_V"
+        app:layout_constraintStart_toStartOf="@+id/ans_left"
+        app:layout_constraintTop_toTopOf="@+id/ans_top" />
 
     <Button
         android:id="@+id/ans2"
@@ -191,10 +170,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/ans2_bottom"
-        app:layout_constraintEnd_toStartOf="@+id/button_right"
-        app:layout_constraintStart_toStartOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="@+id/ans2_top" />
+        app:layout_constraintBottom_toTopOf="@+id/ans_middle_H"
+        app:layout_constraintEnd_toStartOf="@+id/ans_right"
+        app:layout_constraintStart_toEndOf="@+id/ans_middle_V"
+        app:layout_constraintTop_toTopOf="@+id/ans_top" />
 
     <Button
         android:id="@+id/ans3"
@@ -204,10 +183,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/ans3_bottom"
-        app:layout_constraintEnd_toStartOf="@+id/button_right"
-        app:layout_constraintStart_toStartOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="@+id/ans3_top" />
+        app:layout_constraintBottom_toTopOf="@+id/ans_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/ans_middle_V"
+        app:layout_constraintStart_toStartOf="@+id/ans_left"
+        app:layout_constraintTop_toTopOf="@+id/ans_middle_H" />
 
     <Button
         android:id="@+id/ans4"
@@ -217,21 +196,20 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/ans4_bottom"
-        app:layout_constraintEnd_toStartOf="@+id/button_right"
-        app:layout_constraintStart_toStartOf="@+id/button_left"
-        app:layout_constraintTop_toTopOf="@+id/ans4_top" />
+        app:layout_constraintBottom_toTopOf="@+id/ans_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/ans_right"
+        app:layout_constraintStart_toStartOf="@+id/ans_middle_V"
+        app:layout_constraintTop_toTopOf="@+id/ans_middle_H" />
 
     <com.example.toeic_game.ScoreBar
         android:id="@+id/score_bar"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@id/text_top"
         app:layout_constraintEnd_toStartOf="@+id/p2_right"
         app:layout_constraintStart_toStartOf="@+id/p1_left"
-        app:layout_constraintTop_toTopOf="@+id/head_bottom" />
+        app:layout_constraintTop_toTopOf="@+id/scoreBar_top" />
 
     <TextView
         android:id="@+id/time"
@@ -246,6 +224,26 @@
         app:layout_constraintEnd_toStartOf="@+id/p2_left"
         app:layout_constraintStart_toEndOf="@+id/p1_right"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/p1_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/scoreBar_top"
+        app:layout_constraintEnd_toStartOf="@+id/p1_right"
+        app:layout_constraintStart_toStartOf="@id/p1_left"
+        app:layout_constraintTop_toBottomOf="@+id/p1_head" />
+
+    <TextView
+        android:id="@+id/p2_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/scoreBar_top"
+        app:layout_constraintEnd_toStartOf="@id/p2_right"
+        app:layout_constraintStart_toStartOf="@+id/p2_left"
+        app:layout_constraintTop_toBottomOf="@id/head_bottom" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

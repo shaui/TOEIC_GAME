@@ -15,8 +15,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.toeic_game.MainActivity;
 import com.example.toeic_game.R;
 import com.example.toeic_game.util.AutoAdaptImage;
+import com.example.toeic_game.util.ToastUtil;
 
 public class StartDialog extends Dialog {
 
@@ -43,7 +45,7 @@ public class StartDialog extends Dialog {
 
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
         setContentView(view);
         setDialogDimension();
 
@@ -57,6 +59,9 @@ public class StartDialog extends Dialog {
         btn_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(MainActivity.currentUser == null){
+                    ToastUtil.showMsg(context, "Doesn't log in, you will not store the data.");
+                }
                 MatchDialog matchDialog = new MatchDialog(context);
                 matchDialog.show();
                 dismiss();
@@ -67,7 +72,7 @@ public class StartDialog extends Dialog {
     private void onCreateWithPic(){
         /*去除標題欄*/
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_strat_dialog, null, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_start_dialog, null, false);
 //        ImageView iv_start = view.findViewById(R.id.iv_start);
 //        iv_start.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //        Glide.with(context).load(drawable).into(iv_start);
