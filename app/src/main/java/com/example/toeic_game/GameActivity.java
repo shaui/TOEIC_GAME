@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -34,7 +36,7 @@ public class GameActivity extends AppCompatActivity {
     private ScoreBar scoreBar;
     private TextView timeTextView, questTextView, nameP1, nameP2;
     private Button[] ans = new Button[4];
-    private AnimatorSet animation;
+    private AnimatorSet readyAnim;
 
     private DatabaseReference roomRef, selfRef, oppoRef;
     private Player self, oppo;
@@ -77,10 +79,10 @@ public class GameActivity extends AppCompatActivity {
     private MyCountDownTimer readyClock = new MyCountDownTimer(3000,1000) {
         @Override
         public void onFinish() {
-            animation.cancel();
+            readyAnim.cancel();
             //復原文字大小
-            timeTextView.setScaleX(1.0f);
-            timeTextView.setScaleY(1.0f);
+//            timeTextView.setScaleX(1.0f);
+//            timeTextView.setScaleY(1.0f);
             timeTextView.setText(R.string.game_readyText);
             displayQuest();
             headP1.start(false);
@@ -96,8 +98,8 @@ public class GameActivity extends AppCompatActivity {
             /* 動畫在下次執行前要取消掉
             不然在執行完之前 無法再次執行
              不會報錯 可是會看不見 */
-            animation.cancel();
-            animation.start();
+            readyAnim.cancel();
+            readyAnim.start();
         }
     };
 
@@ -174,8 +176,8 @@ public class GameActivity extends AppCompatActivity {
         ans[2] = findViewById(R.id.ans3);
         ans[3] = findViewById(R.id.ans4);
         timeTextView = findViewById(R.id.time);
-        animation = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.text_countdown);
-        animation.setTarget(timeTextView);
+        readyAnim = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.text_countdown);
+        readyAnim.setTarget(timeTextView);
         questTextView = findViewById(R.id.quest);
         setPlayerData();
         for(int i = 0; i < 4; i++) {
@@ -320,7 +322,19 @@ public class GameActivity extends AppCompatActivity {
         selfIsReady = true;
         oppoIsReady = true;
         roomRef.removeValue();
-        this.finish();
+        Animation endingAnimP1, endingAnimP2;
+        if(p1Win) {
+            endingAnimP1 = AnimationUtils.loadAnimation(this, R.anim.ending_win_p1);
+            endingAnimP2 = AnimationUtils.loadAnimation(this, R.anim.ending_lose);
+        }
+        else {
+            endingAnimP1 = AnimationUtils.loadAnimation(this, R.anim.ending_lose);
+            endingAnimP2 = AnimationUtils.loadAnimation(this, R.anim.ending_win_p2);
+        }
+        headP1.pause();
+        headP2.pause();
+        headP1.startAnimation(endingAnimP1);
+        headP2.startAnimation(endingAnimP2);
     }
 
 }
