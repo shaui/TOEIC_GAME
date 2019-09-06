@@ -81,8 +81,8 @@ public class GameActivity extends AppCompatActivity {
         public void onFinish() {
             readyAnim.cancel();
             //復原文字大小
-//            timeTextView.setScaleX(1.0f);
-//            timeTextView.setScaleY(1.0f);
+            timeTextView.setScaleX(1.0f);
+            timeTextView.setScaleY(1.0f);
             timeTextView.setText(R.string.game_readyText);
             displayQuest();
             headP1.start(false);
@@ -157,7 +157,7 @@ public class GameActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         isPlayer1 = bundle.getBoolean("isPlayer1");
         hasAI = bundle.getBoolean("isAI");
-        roomRef = FirebaseDatabase.getInstance().getReference().child("room" + bundle.getString("roomID"));
+        roomRef = FirebaseDatabase.getInstance().getReference().child("room/" + bundle.getString("roomID"));
         if(isPlayer1) {
             selfRef = roomRef.child("player1");
             oppoRef = roomRef.child("player2");
