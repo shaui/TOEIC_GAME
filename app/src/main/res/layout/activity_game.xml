@@ -219,7 +219,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:textSize="60sp"
+        android:textSize="55sp"
         app:layout_constraintBottom_toTopOf="@id/head_bottom"
         app:layout_constraintEnd_toStartOf="@+id/p2_left"
         app:layout_constraintStart_toEndOf="@+id/p1_right"

@@ -167,7 +167,7 @@ public class MatchDialog extends Dialog {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(20000);
+                            Thread.sleep(1000);
                             isAI = true;
                             tempRoomRef.child("player2").setValue(new Player("AI"));
                         } catch (InterruptedException e) {

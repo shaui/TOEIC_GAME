@@ -57,7 +57,7 @@ public class CountDownView extends androidx.appcompat.widget.AppCompatImageView 
             oval = new RectF(ix, iy, fx, fy);
             path.addOval(new RectF(ix - 5, iy - 5, fx + 5, fy + 5), Path.Direction.CW);
         }
-        canvas.clipPath(path, Region.Op.INTERSECT);
+//        canvas.clipPath(path, Region.Op.INTERSECT);
         super.onDraw(canvas);
         p.setColor(Color.GRAY);
         canvas.drawArc(oval, 0, 360, false, p);

@@ -5,6 +5,8 @@ import android.animation.AnimatorSet;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -65,11 +67,11 @@ public class GameActivity extends AppCompatActivity {
     private Runnable updateAIScore = () -> {
         double sleepTime = Math.random();
         try {
-            Thread.sleep(Math.round(sleepTime * 5000));
+            Thread.sleep(Math.round(sleepTime * 4000 + 1000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        int AIscoreTemp = (int) Math.round(500 * sleepTime) + 500;
+        int AIscoreTemp = (int) Math.round(400 * (1 - sleepTime)) + 500;
         AIscoreTemp -= Math.round(Math.random() * 4) *100;
         AIscore += AIscoreTemp;
         oppoRef.child("score").setValue(AIscore);
@@ -306,7 +308,7 @@ public class GameActivity extends AppCompatActivity {
         int tempScore = 0;
         if(ansWrong > 0)
             tempScore = ansWrong * -100;
-        else
+        else if(ansAt == 4)
             tempScore = 200;
         if(ansAt == 4)
             tempScore += 500 * time / 5000 + 500;
@@ -322,19 +324,24 @@ public class GameActivity extends AppCompatActivity {
         selfIsReady = true;
         oppoIsReady = true;
         roomRef.removeValue();
+        Handler handler = new Handler(Looper.getMainLooper());
         Animation endingAnimP1, endingAnimP2;
         if(p1Win) {
+            handler.post(() -> headP1.bringToFront());
             endingAnimP1 = AnimationUtils.loadAnimation(this, R.anim.ending_win_p1);
             endingAnimP2 = AnimationUtils.loadAnimation(this, R.anim.ending_lose);
         }
         else {
+            handler.post(() -> headP2.bringToFront());
             endingAnimP1 = AnimationUtils.loadAnimation(this, R.anim.ending_lose);
             endingAnimP2 = AnimationUtils.loadAnimation(this, R.anim.ending_win_p2);
         }
-        headP1.pause();
-        headP2.pause();
-        headP1.startAnimation(endingAnimP1);
-        headP2.startAnimation(endingAnimP2);
+        handler.post(() -> {
+            headP1.pause();
+            headP2.pause();
+            headP1.startAnimation(endingAnimP1);
+            headP2.startAnimation(endingAnimP2);
+        });
     }
 
 }
