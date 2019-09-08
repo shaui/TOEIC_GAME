@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int reqWidth, reqHeight;
 
+    //監聽網路狀態
+
     //menu data
     private Menu nav_menu = null;
     private View nav_header = null;
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         //declare variable
         tabNameList = new ArrayList<>();
