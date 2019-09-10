@@ -30,8 +30,8 @@ import java.util.TreeMap;
 
 public class GameActivity extends AppCompatActivity {
 
-    private int questNum = 0, ansAt = 0, score = 0, AIscore = 0, ansWrong = 0, time = 0;
-    private boolean isPlayer1, hasAI, selfIsReady = false, oppoIsReady = false, initialed = false, endGame = false;
+    private int questNum = 0, ansAt = 0, ansWrong = 0, time = 0;
+    private boolean isPlayer1, hasAI, initialed = false, endGame = false;
     private String[] quest;
 
     private CountDownView headP1, headP2;
@@ -41,7 +41,7 @@ public class GameActivity extends AppCompatActivity {
     private AnimatorSet readyAnim;
 
     private DatabaseReference roomRef, selfRef, oppoRef;
-    private Player self, oppo;
+    private Player self, oppo, player1, player2;
 
     private TreeMap<String, Integer> randomOptions = new TreeMap<>((String o1, String o2) -> Math.random() > 0.5 ? 1 : -1);
     private Entry<String, Integer>[] optionList = new Entry[4];
@@ -51,20 +51,20 @@ public class GameActivity extends AppCompatActivity {
         while(!endGame) {
             getQuest();
             //等待玩家答題完畢
-            while(!oppoIsReady || !selfIsReady) {
+            while(!self.isReady() || !oppo.isReady()) {
                 try {
                     Thread.sleep(40);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            selfIsReady = false;
-            oppoIsReady = false;
         }
     });
 
     //虛擬對手
     private Runnable updateAIScore = () -> {
+        oppo.setReady(false);
+        oppoRef.child("ready").setValue(false);
         double sleepTime = Math.random();
         try {
             Thread.sleep(Math.round(sleepTime * 4000 + 1000));
@@ -73,8 +73,9 @@ public class GameActivity extends AppCompatActivity {
         }
         int AIscoreTemp = (int) Math.round(400 * (1 - sleepTime)) + 500;
         AIscoreTemp -= Math.round(Math.random() * 4) *100;
-        AIscore += AIscoreTemp;
-        oppoRef.child("score").setValue(AIscore);
+        oppo.addScore(AIscoreTemp);
+        oppo.setReady(true);
+        oppoRef.setValue(oppo);
     };
 
     //執行準備動畫，結束後顯示題目
@@ -82,9 +83,8 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onFinish() {
             readyAnim.cancel();
-            //復原文字大小
-            timeTextView.setScaleX(1.0f);
-            timeTextView.setScaleY(1.0f);
+            timeTextView.setScaleX(1);
+            timeTextView.setScaleY(1);
             timeTextView.setText(R.string.game_readyText);
             displayQuest();
             headP1.start(false);
@@ -124,13 +124,13 @@ public class GameActivity extends AppCompatActivity {
     private ValueEventListener oppoScoreListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            if(initialed && dataSnapshot.getValue(Integer.class) != null) {
+            oppo = dataSnapshot.getValue(Player.class);
+            if(initialed && oppo.isReady()) {
                 if(isPlayer1)
                     headP2.pause();
                 else
                     headP1.pause();
-                scoreBar.setScore(!isPlayer1, dataSnapshot.getValue(Integer.class) );
-                oppoIsReady = true;
+                scoreBar.setScore(!isPlayer1, oppo.getScore());
             }
             initialed = true;
         }
@@ -168,6 +168,33 @@ public class GameActivity extends AppCompatActivity {
             selfRef = roomRef.child("player2");
             oppoRef = roomRef.child("player1");
         }
+        setComponent();
+        readyAnim = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.text_countdown);
+        readyAnim.setTarget(timeTextView);
+        for(int i = 0; i < 4; i++)
+            setAnsButtonEvent(i);
+        roomRef.addValueEventListener(detectOppoLeavedListener);
+        oppoRef.addValueEventListener(oppoScoreListener);
+        setPlayerData();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(hasAI)
+            roomRef.removeValue();
+        else
+            selfRef.removeValue();
+        endGame = true;
+        self.setReady(true);
+        oppo.setReady(true);
+        oppoRef.removeEventListener(oppoScoreListener);
+        roomRef.removeEventListener(detectOppoLeavedListener);
+        readyClock.cancel();
+        roundTimeClock.cancel();
+        super.onDestroy();
+    }
+
+    private void setComponent() {
         headP1 = findViewById(R.id.p1_head);
         headP2 = findViewById(R.id.p2_head);
         nameP1 = findViewById(R.id.p1_name);
@@ -178,34 +205,12 @@ public class GameActivity extends AppCompatActivity {
         ans[2] = findViewById(R.id.ans3);
         ans[3] = findViewById(R.id.ans4);
         timeTextView = findViewById(R.id.time);
-        readyAnim = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.text_countdown);
-        readyAnim.setTarget(timeTextView);
         questTextView = findViewById(R.id.quest);
-        setPlayerData();
-        for(int i = 0; i < 4; i++) {
-            ans[i].setEnabled(false);
-            setAnsButtonEvent(i);
-        }
-        roomRef.addValueEventListener(detectOppoLeavedListener);
-        oppoRef.child("score").addValueEventListener(oppoScoreListener);
-        gameThread.start();
-    }
-
-    @Override
-    protected void onDestroy() {
-        selfRef.removeValue();
-        endGame = true;
-        selfIsReady = true;
-        oppoIsReady = true;
-        oppoRef.child("score").removeEventListener(oppoScoreListener);
-        roomRef.removeEventListener(detectOppoLeavedListener);
-        readyClock.cancel();
-        roundTimeClock.cancel();
-        super.onDestroy();
     }
 
     //設置按鈕事件
     private void setAnsButtonEvent(final int num) {
+        ans[num].setEnabled(false);
         ans[num].setOnClickListener((View v) -> {
                 if(ansAt == optionList[num].getValue()) {
                     ansAt++;
@@ -223,29 +228,32 @@ public class GameActivity extends AppCompatActivity {
         roomRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                player1 = dataSnapshot.child("player1").getValue(Player.class);
+                player2 = dataSnapshot.child("player2").getValue(Player.class);
                 if(isPlayer1) {
-                    self = dataSnapshot.child("player1").getValue(Player.class);
-                    nameP1.setText(self.getName());
-                    oppo = dataSnapshot.child("player2").getValue(Player.class);
-                    nameP2.setText(oppo.getName());
+                    self = player1;
+                    oppo = player2;
                 }
                 else {
-                    self = dataSnapshot.child("player2").getValue(Player.class);
-                    nameP2.setText(self.getName());
-                    oppo = dataSnapshot.child("player1").getValue(Player.class);
-                    nameP1.setText(oppo.getName());
+                    self = player2;
+                    oppo = player1;
                 }
+                nameP1.setText(player1.getName());
+                nameP2.setText(player2.getName());
+                //設置頭像
+                Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP1);
+                Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP2);
+                gameThread.start();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
-        //設置頭像
-        Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP1);
-        Glide.with(GameActivity.this).load(R.drawable.icon_image_head).into(headP2);
     }
 
     //回合開始，先抓完題目才準備開始
     private void getQuest() {
+        self.setReady(false);
+        selfRef.child("ready").setValue(false);
         if(questNum > 4) {
             int[] tempScore = scoreBar.getScore();
             if(tempScore[0] > tempScore[1])
@@ -296,11 +304,11 @@ public class GameActivity extends AppCompatActivity {
         else
             headP2.pause();
         Log.i("P1 remaining time ", String.valueOf(headP1.getRemainingTime()));
-        score += countScore();
-        scoreBar.setScore(isPlayer1, score);
-        selfRef.child("score").setValue(score);
+        self.addScore(countScore());
+        self.setReady(true);
+        scoreBar.setScore(isPlayer1, self.getScore());
+        selfRef.setValue(self);
         ansAt = 0;
-        selfIsReady = true;
     }
 
     //計算分數
@@ -318,11 +326,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void ending(boolean p1Win) {
-        roomRef.removeEventListener(detectOppoLeavedListener);
-        oppoRef.child("score").removeEventListener(oppoScoreListener);
         endGame = true;
-        selfIsReady = true;
-        oppoIsReady = true;
+        oppoRef.removeEventListener(oppoScoreListener);
+        roomRef.removeEventListener(detectOppoLeavedListener);
         roomRef.removeValue();
         Handler handler = new Handler(Looper.getMainLooper());
         Animation endingAnimP1, endingAnimP2;

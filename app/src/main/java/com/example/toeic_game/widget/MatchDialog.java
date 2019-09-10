@@ -32,6 +32,7 @@ public class MatchDialog extends Dialog {
     private TextView tv_match_player;
     private Context context;
     private boolean isAI = false;
+    private boolean isMatching = false;
     private Thread aiThread;
     private MatchListener matchListener;
 
@@ -167,9 +168,15 @@ public class MatchDialog extends Dialog {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(1000);
-                            isAI = true;
-                            tempRoomRef.child("player2").setValue(new Player("AI"));
+                            Thread.sleep(20000);
+                            if(isMatching){
+                                Log.i("---search---", "Matching");
+                            }else {
+                                isAI = true;
+                                Log.i("---search---", "not matching, set AI");
+                                tempRoomRef.child("player2").setValue(new Player("AI"));
+                            }
+
                         } catch (InterruptedException e) {
                             Log.i("---search---", "find the plyer2 or cancel the matching");
                         }
@@ -181,7 +188,7 @@ public class MatchDialog extends Dialog {
                 //先刪除Listener,再跳轉
                 tempRoomRef.removeEventListener(this);
                 //告知Thread已經中斷
-                aiThread.interrupt();
+                isMatching = true;
                 //關閉matchingDialog
                 dismiss();
                 deliverData();

@@ -3,6 +3,7 @@ package com.example.toeic_game;
 public class Player {
     private String name;
     private int score = 0;
+    private boolean ready = false;
     //不寫會報錯，為了預防data沒有填入數據
     public Player(){
         name = "no_name";
@@ -29,6 +30,16 @@ public class Player {
     }
 
     public int addScore(int score){
-        return this.score + score;
+        this.score += score;
+        return this.score;
     }
+
+    public boolean isReady() {
+        return ready;
+    }
+
+    public void setReady(boolean ready) {
+        this.ready = ready;
+    }
+
 }
