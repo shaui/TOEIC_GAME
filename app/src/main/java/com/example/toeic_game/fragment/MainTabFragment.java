@@ -14,7 +14,9 @@ import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.toeic_game.MainActivity;
 import com.example.toeic_game.R;
+import com.example.toeic_game.util.ToastUtil;
 import com.example.toeic_game.widget.StartDialog;
 import com.makeramen.roundedimageview.RoundedImageView;
 
@@ -56,8 +58,10 @@ public class MainTabFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
+            if(!MainActivity.isConnected){
+                ToastUtil.showMsg(context, "Not connected to the network, use the default mode");
+            }
             switch (v.getId()){
-
                 case R.id.riv_gmae_1:
                     StartDialog startDialog1 = new StartDialog(context);
                     startDialog1.show();

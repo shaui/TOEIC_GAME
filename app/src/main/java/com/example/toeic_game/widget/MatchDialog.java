@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -19,7 +18,6 @@ import com.example.toeic_game.GameActivity;
 import com.example.toeic_game.MainActivity;
 import com.example.toeic_game.Player;
 import com.example.toeic_game.R;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,16 +27,16 @@ import com.google.firebase.database.ValueEventListener;
 public class MatchDialog extends Dialog {
 
     private Button btn_cancel;
-    private TextView tv_match_player;
     private Context context;
     private boolean isAI = false;
+    private boolean isMatching = false;
+    private boolean isCancel = false;
     private Thread aiThread;
     private MatchListener matchListener;
 
     //firebase usage parameter
     private FirebaseDatabase database;
     private DatabaseReference myRef;
-    private FirebaseAuth mAuth;
     private DatabaseReference tempRoomRef = null;
     private Player player_self;
     private String player_self_location;
@@ -70,18 +68,26 @@ public class MatchDialog extends Dialog {
         setCanceledOnTouchOutside(false);
 
         //要放在setContentView下面，不然會找不到(好像)，除非是設定一些屬性
-        tv_match_player = findViewById(R.id.tv_match_player);
         btn_cancel = findViewById(R.id.btn_cancel);
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tempRoomRef.removeValue();
-                tempRoomRef.removeEventListener(matchListener);
-                aiThread.interrupt();
+                tempRoomRef.child("isAvailable").setValue(false);
+                isCancel = true;
+                if(tempRoomRef != null){
+                    tempRoomRef.removeValue();
+                    tempRoomRef.removeEventListener(matchListener);
+                }
                 dismiss();
             }
         });
-        matchPlayer();
+        if(MainActivity.isConnected){
+            matchPlayer();
+        }else {
+            Intent intent = new Intent(context, GameActivity.class);
+            context.startActivity(intent);
+        }
+
     }
 
     private void setDialogDimension(){
@@ -132,6 +138,8 @@ public class MatchDialog extends Dialog {
                 //如果沒有加入任何房間，自己開房
                 if(!isSetPlayer){
                     tempRoomRef = myRef.child("room").push();
+                    //player1 is responsible for setting the room's open/close status.
+                    tempRoomRef.child("isAvailable").setValue(true);
                     player_self_location = tempRoomRef.child("player1").getKey();
                     tempRoomRef.child("player1").setValue(player_self);
                 }
@@ -168,8 +176,13 @@ public class MatchDialog extends Dialog {
                     public void run() {
                         try {
                             Thread.sleep(20000);
-                            isAI = true;
-                            tempRoomRef.child("player2").setValue(new Player("AI"));
+                            if(isMatching || isCancel){
+                                Log.i("---search---", "Stop or complete matching");
+                            }else {
+                                isAI = true;
+                                Log.i("---search---", "not matching the enemy, set AI");
+                                tempRoomRef.child("player2").setValue(new Player("AI"));
+                            }
                         } catch (InterruptedException e) {
                             Log.i("---search---", "find the plyer2 or cancel the matching");
                         }
@@ -178,13 +191,18 @@ public class MatchDialog extends Dialog {
                 aiThread.start();
             }
             else {
-                //先刪除Listener,再跳轉
-                tempRoomRef.removeEventListener(this);
-                //告知Thread已經中斷
-                aiThread.interrupt();
-                //關閉matchingDialog
-                dismiss();
-                deliverData();
+                //如果此房間已關閉(或正在關閉中)
+                if(!dataSnapshot.child("isAvailable").getValue(Boolean.class)){
+                    Log.i("---room---", "The room is close");
+                }else {
+                    //先刪除Listener,再跳轉
+                    tempRoomRef.removeEventListener(this);
+                    //告知Thread已經中斷
+                    isMatching = true;
+                    //關閉matchingDialog
+                    dismiss();
+                    deliverData();
+                }
             }
         }
 

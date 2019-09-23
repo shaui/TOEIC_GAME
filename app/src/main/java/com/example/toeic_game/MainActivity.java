@@ -8,6 +8,10 @@ import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
@@ -83,13 +87,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int reqWidth, reqHeight;
 
-    //監聽網路狀態
-
     //menu data
     private Menu nav_menu = null;
     private View nav_header = null;
     private TextView nav_tv_name;
     private RoundedImageView nav_riv_image_head;
+
+    //監聽網路狀態
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
+    public static boolean isConnected = false;
 
     //firebase
     private FirebaseDatabase database;
@@ -119,7 +126,151 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        isConnected = isNetworkAvailable();
+        Log.d("---network---", String.valueOf(isConnected));
+        networkCallback = setNetWorkDetector();
 
+        declareVar();
+        setBasicUI();
+
+        //firebbase
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference();
+
+        //firebase auth
+        mAuth = FirebaseAuth.getInstance();
+
+        /*google登入*/
+
+        //configure Google Sign-In to request the user data.
+        //The Options is mean that you con use variable method to get the different user data
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .requestProfile()
+                .build();
+
+        //Build a GoogleSignInClient with the options specified by gso.
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        //login button
+        google_login_btn = findViewById(R.id.google_login_btn);
+        setGooglePlusButtonText(google_login_btn, "Sign in with google");
+        anonymously_login_btn = findViewById(R.id.anonymously_login_btn);
+        LoginListener loginListener = new LoginListener();
+        google_login_btn.setOnClickListener(loginListener);
+        anonymously_login_btn.setOnClickListener(loginListener);
+
+        //check login status
+        isLogin = checkLoginStatus();
+
+        /*NavigationView*/
+
+        //set the ItemListener
+        navigationView.setNavigationItemSelectedListener(this);
+        //get menu by navigationView
+        nav_menu = navigationView.getMenu();
+        //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
+        nav_header = navigationView.getHeaderView(0);
+
+        //get some item to use
+        nav_tv_name = nav_header.findViewById(R.id.tv_name);
+        nav_riv_image_head = nav_header.findViewById(R.id.riv_image_head);
+
+        //set the image head
+        Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
+        //add the underline
+        nav_tv_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
+
+        //listener for changing the name
+        nav_tv_name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isConnected){
+                    if(isLogin){
+                        NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name);
+                        nameDialog.show();
+                    } else{
+                        ToastUtil.showMsg(MainActivity.this, "Please log in to change the name");
+                    }
+                } else{
+                    ToastUtil.showMsg(MainActivity.this, "Please confirm if your network is connected.");
+                }
+
+            }
+        });
+
+        //請求圖片讀取權限
+        permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        //Listener for changing the image head
+        nav_riv_image_head.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                //API23以上需要做這個檢查
+                if(isConnected){
+                    if(isLogin){
+                        if(permission != PackageManager.PERMISSION_GRANTED){
+                            //未取得權限，向使用者要求允許權限
+                            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    permissions, REQUEST_EXTERNEL_PERMISSION );
+                        } else{
+                            //已有權限，可進行檔案存取
+                            getLocalImage();
+                        }
+                    } else{
+                        ToastUtil.showMsg(MainActivity.this, "Fail, please check if you have logged in");
+                    }
+                } else{
+                    ToastUtil.showMsg(MainActivity.this, "Please confirm if your network is connected.");
+                }
+            }
+        });
+    }
+
+    private boolean isNetworkAvailable(){
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo != null){
+            if(networkInfo.isConnected()){
+                return true;
+            }
+            else return false;
+        }
+        return false;
+    }
+
+    private ConnectivityManager.NetworkCallback setNetWorkDetector(){
+        //return the network information
+
+        ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback(){
+            @Override
+            public void onAvailable(Network network) {
+                super.onAvailable(network);
+                ToastUtil.showMsg(MainActivity.this,"Network onAvailable");
+                Log.i("---network---", "onAvailable");
+                isConnected = true;
+            }
+
+            @Override
+            public void onLost(Network network) {
+                super.onLost(network);
+                ToastUtil.showMsg(MainActivity.this, "Network onLost");
+                Log.i("---network---", "onLost");
+                isConnected = false;
+            }
+        };
+        connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        //register the networkCallback
+        connectivityManager.registerNetworkCallback(new NetworkRequest.Builder().build(), networkCallback);
+
+
+        return networkCallback;
+    }
+
+    private void declareVar(){
         //declare variable
         tabNameList = new ArrayList<>();
         tabLayout = findViewById(R.id.layout_tab);
@@ -131,7 +282,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         btn_nav = findViewById(R.id.btn_nav);
         drawerLayout = findViewById(R.id.layout_dl);
         navigationView = findViewById(R.id.nav_view);
+    }
 
+    private void setBasicUI(){
         //add tabNameList
         tabNameList.add("Tab1");
         tabNameList.add("Tab2");
@@ -172,90 +325,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
-
-        //NavigationView
-        navigationView.setNavigationItemSelectedListener(this);
-        //get menu by navigationView
-        nav_menu = navigationView.getMenu();
-
-        //firebbase
-        database = FirebaseDatabase.getInstance();
-        myRef = database.getReference();
-        //firebase auth
-        mAuth = FirebaseAuth.getInstance();
-
-        /*google登入*/
-
-        //configure Google Sign-In to request the user data.
-        //The Options is mean that you con use variable method to get the different user data
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .requestProfile()
-                .build();
-
-        //Build a GoogleSignInClient with the options specified by gso.
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        //login button
-        google_login_btn = findViewById(R.id.google_login_btn);
-        setGooglePlusButtonText(google_login_btn, "Sign in with google");
-        anonymously_login_btn = findViewById(R.id.anonymously_login_btn);
-        LoginListener loginListener = new LoginListener();
-        google_login_btn.setOnClickListener(loginListener);
-        anonymously_login_btn.setOnClickListener(loginListener);
-
-        //check login status
-        isLogin = checkLoginStatus();
-
-        //取得第0個header,好像可以多個,裡面有可能要修改資料庫，所以放在資料庫變數宣告完的地方
-        nav_header = navigationView.getHeaderView(0);
-        nav_tv_name = nav_header.findViewById(R.id.tv_name);
-        nav_riv_image_head = nav_header.findViewById(R.id.riv_image_head);
-        permission = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        Glide.with(this).load(R.drawable.icon_image_head).into(nav_riv_image_head);
-        nav_riv_image_head.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                //API23以上需要做這個檢查
-                if(isLogin){
-                    if(permission != PackageManager.PERMISSION_GRANTED){
-                        //未取得權限，向使用者要求允許權限
-                        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                permissions, REQUEST_EXTERNEL_PERMISSION );
-                    }
-                    else {
-                        //已有權限，可進行檔案存取
-                        getLocalImage();
-                    }
-                }
-                else {
-                    ToastUtil.showMsg(MainActivity.this, "Fail, please check if you have logged in");
-                }
-
-
-            }
-        });
-
-        //添加底線
-        nav_tv_name.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        nav_tv_name.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //登入才能改名字
-                if(isLogin){
-                    NameDialog nameDialog = new NameDialog(MainActivity.this, nav_tv_name);
-                    nameDialog.show();
-                }
-                else{
-                    ToastUtil.showMsg(MainActivity.this, "Please log in to change the name");
-                }
-            }
-        });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -330,26 +401,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 case R.id.google_login_btn:
                     drawerLayout.closeDrawer(GravityCompat.END);
                     //Use the googleSignInClient to get the Intent to deliver data.
-                    Intent signInIntent = googleSignInClient.getSignInIntent();
-                    startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+                    if(isConnected){
+                        Intent signInIntent = googleSignInClient.getSignInIntent();
+                        startActivityForResult(signInIntent, GOOGLE_SIGN_IN);
+                    }else {
+                        ToastUtil.showMsg(MainActivity.this, "Please confirm if your network is connected.");
+                    }
+
                     break;
                 case R.id.anonymously_login_btn:
                     drawerLayout.closeDrawer(GravityCompat.END);
-                    mAuth.signInAnonymously()
-                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if(task.isSuccessful()){
-                                        setLoginStatus();
-                                        Log.i("---success---", "signInAnonymously:success");
-                                        myRef.child("members")
-                                                .addListenerForSingleValueEvent(new FirebaseDataListener());
+                    if(isConnected){
+                        mAuth.signInAnonymously()
+                                .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if(task.isSuccessful()){
+                                            setLoginStatus();
+                                            Log.i("---success---", "signInAnonymously:success");
+                                            myRef.child("members")
+                                                    .addListenerForSingleValueEvent(new FirebaseDataListener());
+                                        }
+                                        else{
+                                            Log.i("---fail---", "Login fail");
+                                        }
                                     }
-                                    else{
-                                        Log.i("---fail---", "Login fail");
-                                    }
-                                }
-                            });
+                                });
+                    }else {
+                        ToastUtil.showMsg(MainActivity.this, "Please confirm if your network is connected.");
+                    }
+
                     break;
             }
         }
@@ -626,7 +707,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 drawerLayout.openDrawer(GravityCompat.END);
                 break;
             case R.id.nav_logout:
-                //firebase's signOut,會緩存帳號，可下次案登入時不用選擇帳號
+                //firebase's signOut,會緩存帳號，可下次登入時不用選擇帳號
                 FirebaseAuth.getInstance().signOut();
                 //真正完全signOut，下次登入要重新選擇帳號
                 googleSignInClient.signOut();
@@ -684,4 +765,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        connectivityManager.unregisterNetworkCallback(networkCallback);
+    }
 }
