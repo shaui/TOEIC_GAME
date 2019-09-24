@@ -168,7 +168,7 @@ public class MatchDialog extends Dialog {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(20000);
+                            Thread.sleep(1000);
                             if(isMatching){
                                 Log.i("---search---", "Matching");
                             }else {

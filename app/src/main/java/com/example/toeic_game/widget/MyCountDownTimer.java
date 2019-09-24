@@ -49,6 +49,12 @@ public class MyCountDownTimer {
         this.countDownInterval = countDownInterval;
     }
 
+    public MyCountDownTimer(long millisInFuture) {
+        this.millisInFuture = millisInFuture;
+        millisLeft = millisInFuture;
+        this.countDownInterval = millisInFuture;
+    }
+
     public final synchronized void start() {
         if(!isStart) {
             isStart = true;

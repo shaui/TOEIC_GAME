@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -23,6 +25,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.ArrayList;
 import java.util.Map.Entry;
@@ -109,8 +112,10 @@ public class GameActivity extends AppCompatActivity {
     private MyCountDownTimer roundTimeClock = new MyCountDownTimer(5000, 100) {
         @Override
         public void onFinish() {
-            for(int i = 0; i < 4; i++)
-                ans[i].setEnabled(false);
+            for(Button b : ans) {
+                b.setAlpha(0.5f);
+                b.setEnabled(false);
+            }
             nextRound();
         }
 
@@ -194,6 +199,24 @@ public class GameActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        //遊戲結束時點擊螢幕跳回主畫面
+        if(endGame) {
+            finish();
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     private void setComponent() {
         headP1 = findViewById(R.id.p1_head);
         headP2 = findViewById(R.id.p2_head);
@@ -209,12 +232,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     //設置按鈕事件
-    private void setAnsButtonEvent(final int num) {
-        ans[num].setEnabled(false);
-        ans[num].setOnClickListener((View v) -> {
+    private void setAnsButtonEvent(int num) {
+        final Button b = ans[num];
+        b.setAlpha(0.5f);
+        b.setEnabled(false);
+        b.setOnClickListener((View v) -> {
                 if(ansAt == optionList[num].getValue()) {
                     ansAt++;
-                    ans[num].setEnabled(false);
+                    b.setEnabled(false);
+                    b.setAlpha(0.5f);
                     if(ansAt == 4)
                         nextRound();
                 }
@@ -291,6 +317,7 @@ public class GameActivity extends AppCompatActivity {
                 builder.append("\n");
             optionList[i] = randomOptions.pollFirstEntry();
             ans[i].setText(optionList[i].getKey());
+            ans[i].setAlpha(1.0f);
             ans[i].setEnabled(true);
         }
         questTextView.setText(builder.toString());
@@ -303,6 +330,9 @@ public class GameActivity extends AppCompatActivity {
             headP1.pause();
         else
             headP2.pause();
+        for(Button b : ans)
+            b.setText("");
+        questTextView.setText("");
         Log.i("P1 remaining time ", String.valueOf(headP1.getRemainingTime()));
         self.addScore(countScore());
         self.setReady(true);
@@ -326,11 +356,16 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void ending(boolean p1Win) {
-        endGame = true;
         oppoRef.removeEventListener(oppoScoreListener);
         roomRef.removeEventListener(detectOppoLeavedListener);
         roomRef.removeValue();
         Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            headP1.pause();
+            headP2.pause();
+            headP1.setRingVisible(false);
+            headP2.setRingVisible(false);
+        });
         Animation endingAnimP1, endingAnimP2;
         if(p1Win) {
             handler.post(() -> headP1.bringToFront());
@@ -343,11 +378,21 @@ public class GameActivity extends AppCompatActivity {
             endingAnimP2 = AnimationUtils.loadAnimation(this, R.anim.ending_win_p2);
         }
         handler.post(() -> {
-            headP1.pause();
-            headP2.pause();
             headP1.startAnimation(endingAnimP1);
             headP2.startAnimation(endingAnimP2);
         });
+        //等待動畫結束
+        while(true) {
+            if(endingAnimP1.hasEnded() && endingAnimP2.hasEnded()) {
+                endGame = true;
+                break;
+            }
+            try {
+                Thread.sleep(40);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

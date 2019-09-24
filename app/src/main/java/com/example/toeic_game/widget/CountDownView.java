@@ -4,18 +4,17 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.Region;
 import android.util.AttributeSet;
 
-public class CountDownView extends androidx.appcompat.widget.AppCompatImageView {
+import com.makeramen.roundedimageview.RoundedImageView;
 
-    private boolean ini = false;
+public class CountDownView extends RoundedImageView {
+
+    private boolean ini = false, ringVisible = true;
     private int color = Color.GREEN;
     private long time = 4880, passTime = 0;
     private Paint p;
-    private Path path;
     private RectF oval;
 
     private MyCountDownTimer clock = new MyCountDownTimer(time,40) {
@@ -39,31 +38,31 @@ public class CountDownView extends androidx.appcompat.widget.AppCompatImageView 
         p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setStyle(Paint.Style.STROKE); //空心
         p.setStrokeWidth(15);
-        path = new Path();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         if(!ini) {
             ini = true;
             float cx, cy, r;
             cx = getMeasuredWidth() / 2f;
             cy = getMeasuredHeight() / 2f;
             if (getMeasuredHeight() > getMeasuredWidth())
-                r = getMeasuredWidth() * 0.4f;
+                r = getMeasuredWidth() * 0.5f;
             else
-                r = getMeasuredHeight() * 0.4f;
+                r = getMeasuredHeight() * 0.5f;
             float ix = cx - r, iy = cy - r, fx = cx + r, fy = cy + r;
             oval = new RectF(ix, iy, fx, fy);
-            path.addOval(new RectF(ix - 5, iy - 5, fx + 5, fy + 5), Path.Direction.CW);
+            oval.inset(7.5f, 7.5f);
         }
-//        canvas.clipPath(path, Region.Op.INTERSECT);
-        super.onDraw(canvas);
-        p.setColor(Color.GRAY);
-        canvas.drawArc(oval, 0, 360, false, p);
-        p.setColor(color);
-        float a = 270 + passTime / (float) (time) * 360, b = 360 - passTime / (float) time * 360;
-        canvas.drawArc(oval, a, b, false, p);
+        if(ringVisible) {
+            p.setColor(Color.GRAY);
+            canvas.drawArc(oval, 0, 360, false, p);
+            p.setColor(color);
+            float a = 270 + passTime / (float) (time) * 360, b = 360 - passTime / (float) time * 360;
+            canvas.drawArc(oval, a, b, false, p);
+        }
     }
 
     public void setColor(int color) {
@@ -78,6 +77,10 @@ public class CountDownView extends androidx.appcompat.widget.AppCompatImageView 
         return time - passTime;
     }
 
+    public void setRingVisible(boolean visible) {
+        ringVisible = visible;
+    }
+
     public void start(boolean isContinue) {
         if(!isContinue)
             passTime = 0;
@@ -87,6 +90,7 @@ public class CountDownView extends androidx.appcompat.widget.AppCompatImageView 
 
     public void pause() {
         clock.cancel();
+        invalidate();
     }
 
 }

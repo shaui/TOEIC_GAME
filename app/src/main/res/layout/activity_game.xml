@@ -15,7 +15,8 @@
         app:layout_constraintBottom_toTopOf="@+id/head_bottom"
         app:layout_constraintEnd_toStartOf="@+id/p1_right"
         app:layout_constraintStart_toStartOf="@+id/p1_left"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:riv_oval="true" />
 
     <com.example.toeic_game.widget.CountDownView
         android:id="@+id/p2_head"
@@ -26,7 +27,8 @@
         app:layout_constraintBottom_toTopOf="@+id/head_bottom"
         app:layout_constraintEnd_toStartOf="@id/p2_right"
         app:layout_constraintStart_toStartOf="@id/p2_left"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:riv_oval="true" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/p1_right"
@@ -244,6 +246,5 @@
         app:layout_constraintEnd_toStartOf="@id/p2_right"
         app:layout_constraintStart_toStartOf="@+id/p2_left"
         app:layout_constraintTop_toBottomOf="@id/head_bottom" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
